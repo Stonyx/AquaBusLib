@@ -31,7 +31,7 @@
 #ifndef _MB_H
 #define _MB_H
 
-#include "port.h"
+#include "../port/port.h"
 
 #ifdef __cplusplus
 PR_BEGIN_EXTERN_C
