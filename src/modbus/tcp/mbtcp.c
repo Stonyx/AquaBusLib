@@ -33,14 +33,14 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "port.h"
+#include "modbus/port/port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbconfig.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbconfig.h"
 #include "mbtcp.h"
-#include "mbframe.h"
-#include "mbport.h"
+#include "modbus/include/mbframe.h"
+#include "modbus/include/mbport.h"
 
 #if MB_TCP_ENABLED > 0
 

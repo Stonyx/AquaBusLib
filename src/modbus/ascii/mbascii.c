@@ -33,16 +33,16 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "port.h"
+#include "modbus/port/port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbconfig.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbconfig.h"
 #include "mbascii.h"
-#include "mbframe.h"
+#include "modbus/include/mbframe.h"
 
-#include "mbcrc.h"
-#include "mbport.h"
+#include "modbus/rtu/mbcrc.h"
+#include "modbus/include/mbport.h"
 
 #if MB_ASCII_ENABLED > 0
 

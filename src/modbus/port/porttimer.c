@@ -25,11 +25,11 @@
 #include <avr/signal.h>
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "port.h"
+#include "modbus/port/port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbport.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbport.h"
 
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_TIMER_PRESCALER      ( 1024UL )

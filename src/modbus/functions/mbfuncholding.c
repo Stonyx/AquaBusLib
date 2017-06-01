@@ -33,13 +33,13 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "port.h"
+#include "modbus/port/port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbframe.h"
-#include "mbproto.h"
-#include "mbconfig.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbframe.h"
+#include "modbus/include/mbproto.h"
+#include "modbus/include/mbconfig.h"
 
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_PDU_FUNC_READ_ADDR_OFF               ( MB_PDU_DATA_OFF + 0)

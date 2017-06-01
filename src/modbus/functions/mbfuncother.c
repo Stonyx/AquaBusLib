@@ -33,13 +33,13 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "port.h"
+#include "modbus/port/port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbframe.h"
-#include "mbproto.h"
-#include "mbconfig.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbframe.h"
+#include "modbus/include/mbproto.h"
+#include "modbus/include/mbconfig.h"
 
 #if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
 

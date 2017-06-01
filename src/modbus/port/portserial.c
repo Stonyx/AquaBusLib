@@ -27,11 +27,11 @@
 #include <avr/interrupt.h>
 #include <avr/signal.h>
 
-#include "port.h"
+#include "modbus/port/port.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbport.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbport.h"
 
 #define UART_BAUD_RATE          9600
 #define UART_BAUD_CALC(UART_BAUD_RATE,F_OSC) \
