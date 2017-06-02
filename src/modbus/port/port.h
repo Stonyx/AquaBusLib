@@ -62,7 +62,7 @@ typedef long    LONG;
 
 /* ----------------------- AVR platform specifics ---------------------------*/
 
-#if defined (__AVR_ATmega168__)
+#if defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__) || defined (__AVR_ATmega328P__)
 #define UCSRB           UCSR0B
 #define TXEN            TXEN0
 #define RXEN            RXEN0
