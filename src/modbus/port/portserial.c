@@ -102,17 +102,21 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
             break;
     }
 
-#if defined (__AVR_ATmega168__)
+#if defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88P__) || \
+    defined (__AVR_ATmega88PA__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__) || \
+    defined (__AVR_ATmega168P__) || defined (__AVR_ATmega168PA__) || defined (__AVR_ATmega328__) || \
+    defined (__AVR_ATmega328P__)
     UCSRC |= ucUCSRC;
-#elif defined (__AVR_ATmega169__)
+#elif defined (__AVR_ATmega169__) || defined (__AVR_ATmega169A__) || defined (__AVR_ATmega169P__) || \
+    defined (__AVR_ATmega169PA__)
     UCSRC |= ucUCSRC;
-#elif defined (__AVR_ATmega8__)
+#elif defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || defined (__AVR_ATmega8HVA__)
     UCSRC = _BV( URSEL ) | ucUCSRC;
 #elif defined (__AVR_ATmega16__)
     UCSRC = _BV( URSEL ) | ucUCSRC;
 #elif defined (__AVR_ATmega32__)
     UCSRC = _BV( URSEL ) | ucUCSRC;
-#elif defined (__AVR_ATmega128__)
+#elif defined (__AVR_ATmega128__) || defined (__AVR_ATmega128A__)
     UCSRC |= ucUCSRC;
 #endif
 
