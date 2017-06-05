@@ -1,4 +1,6 @@
 // AquaBus Library
+//
+// This software is provided "as is" without express or implied warranty.
 
 // Include header files
 #include "modbus/include/mb.h"
@@ -10,15 +12,18 @@ AquaBusLib::AquaBusLib()
 }
 
 // Function that needs be called from the sketch setup function
-AquaBusLib::setup()
+void AquaBusLib::setup(Device device)
 {
+  // Save the passed in device type
+  mDevice = device;
+
   // Initialize and enable the FreeModBus library
   eMBInit(MB_RTU, 0x00, 0, 19200, MB_PAR_EVEN);
   eMBEnable();
 }
 
 // Function that needs to be called fro the sketch loop function
-AquaBusLib::loop()
+void AquaBusLib::loop()
 {
   eMBPoll();
 }

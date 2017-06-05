@@ -1,4 +1,6 @@
 // AquaBus Library
+//
+// This software is provided "as is" without express or implied warranty.
 
 // Ensure this header file is included only once
 #ifndef AquaBusLib_h
@@ -7,14 +9,20 @@
 // The AquaBusLib class
 class AquaBusLib
 {
-  // User-accessible "public" interface
   public:
+    enum Device
+    {
+      ALD,
+      EB8,
+      PM1,
+      VDM
+    };
     AquaBusLib();
-    setup();
-    loop();
+    void setup(Device device);
+    void loop();
 
-  // Library-accessible "private" interface
-  private:
+  protected:
+    Device mDevice;
 };
 
 #endif
