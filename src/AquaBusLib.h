@@ -6,23 +6,23 @@
 #ifndef AquaBusLib_h
 #define AquaBusLib_h
 
+// Included header files
+#include "modbus/include/mb.h"
+
 // The AquaBusLib class
 class AquaBusLib
 {
   public:
-    enum Device
-    {
-      ALD,
-      EB8,
-      PM1,
-      VDM
-    };
-    AquaBusLib();
-    void setup(Device device);
-    void loop();
+    // Static callback functions
+    static eMBException callbackFor0x01(byte *frame, unsigned short *length);
+    static eMBException callbackFor0x20(byte *frame, unsigned short *length);
 
-  protected:
-    Device mDevice;
+    // Constructor
+    AquaBusLib();
+
+    // Setup and loop functions
+    void setup();
+    void loop();  
 };
 
 #endif
