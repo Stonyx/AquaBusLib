@@ -12,7 +12,7 @@
 // Include header files
 #include "EB8.h"
 
-// Function called to process the recieved data
+// Function called to process recieved data
 void EB8::processData(byte* data, unsigned short length)
 {
 

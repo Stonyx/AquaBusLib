@@ -16,14 +16,20 @@
 // Include header files
 #include "AquaBusDevice.h"
 
+// Define default device properties
+#define EB8_HW_ID 0x20
+#define EB8_HW_REVISION 0x01
+#define EB8_SW_REVISION 0x0C
+
 // The EB8 class
 class EB8 : public AquaBusDevice
 {
   public:
-    // Constructor
-    EB8() : AquaBusDevice(0x20) {}
+    // Constructors
+    EB8(unsigned short serial) : AquaBusDevice(EB8_HW_ID, serial, EB8_HW_REVISION, EB8_SW_REVISION) {}
 
-    void processData(byte* data, unsigned short length);
+    // Function called to process received data
+    virtual void processData(byte* data, unsigned short length);
 };
 
 #endif

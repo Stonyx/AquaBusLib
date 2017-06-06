@@ -20,13 +20,17 @@
 class AquaBusDevice
 {
   public:
-    // Static constant fields
-    const byte id;
+    // Constant fields
+    const byte hwId;
+    const unsigned short hwSerial;
+    const byte hwRevision;
+    const byte swRevision;
 
     // Constructor
-    AquaBusDevice(byte id) : id(id) {}
+    AquaBusDevice(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision) : 
+        hwId(hwId), hwSerial(hwSerial), hwRevision(hwRevision), swRevision(swRevision) {}
 
-    virtual void processData(byte* data, unsigned short length);
+    virtual void processData(byte* data, unsigned short length) = 0;
 };
 
 #endif

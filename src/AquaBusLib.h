@@ -29,7 +29,7 @@ class AquaBusLib
 
     // Constructor and destructor
     AquaBusLib(byte numberOfDevices);
-    ~AquaBusLib();
+    virtual ~AquaBusLib();
 
     // Various functions
     void addDevice(byte number, AquaBusDevice& device);

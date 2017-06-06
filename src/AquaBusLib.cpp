@@ -18,32 +18,70 @@ static AquaBusDevice** AquaBusLib::devices;
 
 // Static callback function for handling initial probing
 eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
-{ 
-  /*
-  // Get the data from the frame
-  struct
+{
+  // Check the length of the frame
+  if (*length == 8)
   {
-    byte function;
-    byte stage;
-    byte address;
-    byte serial;
-  } request;
-  memcpy(&request, frame, sizeof(request));
+    // Define the request structure for frames with this length
+    struct Request
+    {
+      byte functionCode;
+      byte probeStage;
+      byte nextAddress;
+      word hwSerial;
+      byte unknown[3];
+    };
 
-  // Create the reponse
-  struct
+    // Define the response structure
+    struct Response
+    {
+      byte functionCode;
+      byte probeStage;
+      byte hwId;
+      byte hwRevision;
+      byte swRevision;
+      byte nextAddress;
+      word hwSerial;
+      byte unknown[3];
+    };
+
+    // Loop through the devices
+    for (byte i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
+    {
+      // Switch based on the probe stage
+      switch (((Request*)frame)->probeStage)
+      {
+        case 1:
+          // Prepare the response structure
+          Response response;
+          response.functionCode = ((Request*)frame)->functionCode;
+          response.probeStage = ((Request*)frame)->probeStage;
+          response.hwId = devices[i]->hwId;
+          // response.hwRevision
+          // response.swRevision
+          response.nextAddress = ((Request*)frame)->nextAddress;
+          // response.serialNumber
+          break;
+        case 2:
+          break;
+        case 3:
+          break;
+        case 5:
+          break;
+      }
+    }
+  }
+  else if (*length == 5)
   {
-    byte unknown_1;
-    byte unknown_2;
-    byte hardwareType;
-    byte hardwareRevision;
-    byte softwareRevision;
-    byte address;
-    word serial;
-    byte buffer[0];
-  } response;
-  memcpy(frame, &response, sizeof(response));
-  */
+    // Define the request structore for frames with this length
+    struct Request
+    {
+      byte functionCode;
+      byte probeStage;
+      byte abAddress;
+      byte unknown[2];
+    };
+  }
 
   return MB_EX_NONE;
 }
@@ -52,10 +90,10 @@ eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
 eMBException AquaBusLib::deviceCallback(byte* frame, unsigned short* length)
 {
   // Loop through the devices
-  for (int i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
+  for (byte i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
   {
     // Check if the first byte of the frame which is the function code matches the device ID
-    if (frame[0] == devices[i]->id)
+    if (frame[0] == devices[i]->hwId)
     {
       // Call the device's processData function
       devices[i]->processData(frame[1], length - 1);
@@ -96,11 +134,11 @@ void AquaBusLib::initializeDevices()
   eMBRegisterCB(0x01, probeCallback);
 
   // Loop through the devices
-  for (int i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
+  for (byte i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
   {
     // Register the device callback function with the FreeModBus library using the device ID 
     //   as the function code
-    eMBRegisterCB(devices[i]->id, deviceCallback);
+    eMBRegisterCB(devices[i]->hwId, deviceCallback);
   }
 
   // Enable the FreeModBus library
