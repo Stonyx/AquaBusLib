@@ -19,6 +19,9 @@
 // The AquaBusDevice class
 class AquaBusDevice
 {
+  // Make the AquaBusLib class friends with this class
+  friend class AquaBusLib;
+
   public:
     // Constant fields
     const byte hwId;
@@ -30,7 +33,9 @@ class AquaBusDevice
     AquaBusDevice(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision) : 
         hwId(hwId), hwSerial(hwSerial), hwRevision(hwRevision), swRevision(swRevision) {}
 
+  protected:
     virtual void processData(byte* data, unsigned short length) = 0;
+    inline void sendData(byte address, byte* pucFrame, unsigned short length);
 };
 
 #endif

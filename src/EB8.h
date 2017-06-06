@@ -29,7 +29,7 @@ class EB8 : public AquaBusDevice
     EB8(unsigned short serial) : AquaBusDevice(EB8_HW_ID, serial, EB8_HW_REVISION, EB8_SW_REVISION) {}
 
     // Function called to process received data
-    virtual void processData(byte* data, unsigned short length);
+    void processData(byte* data, unsigned short length);
 };
 
 #endif

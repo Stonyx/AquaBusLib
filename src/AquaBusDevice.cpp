@@ -11,3 +11,15 @@
 
 // Include header files
 #include "AquaBusDevice.h"
+#include "modbus/include/mb.h"
+#include "modbus/include/mbframe.h"
+
+// Declare the function pointer used to send ModBus data
+static peMBFrameSend peMBFrameSendCur;
+
+// Function called to send data
+// This function encapsulates the FreeModBus library function used to send the data
+void AquaBusDevice::sendData(byte address, byte* pucFrame, unsigned short length)
+{
+  peMBFrameSendCur(address, pucFrame, length);
+}

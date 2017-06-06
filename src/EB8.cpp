@@ -15,5 +15,4 @@
 // Function called to process recieved data
 void EB8::processData(byte* data, unsigned short length)
 {
-
 }
