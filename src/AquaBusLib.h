@@ -1,4 +1,11 @@
 // AquaBus Library
+// Copyright (C) 2017
+//
+// This software is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+// International License.
+//
+// You can redistribute and/or modify this software for non-commerical purposes under the terms
+// of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // This software is provided "as is" without express or implied warranty.
 
@@ -7,22 +14,31 @@
 #define AquaBusLib_h
 
 // Included header files
+#include <arduino.h>
 #include "modbus/include/mb.h"
+#include "AquaBusDevice.h"
+#include "EB8.h"
 
 // The AquaBusLib class
 class AquaBusLib
 {
   public:
-    // Static callback functions
-    static eMBException callbackFor0x01(byte *frame, unsigned short *length);
-    static eMBException callbackFor0x20(byte *frame, unsigned short *length);
+    // Static member functions
+    static eMBException probeCallback(byte* frame, unsigned short* length);
+    static eMBException deviceCallback(byte* frame, unsigned short* length);
 
-    // Constructor
-    AquaBusLib();
+    // Constructor and destructor
+    AquaBusLib(byte numberOfDevices);
+    ~AquaBusLib();
 
-    // Setup and loop functions
-    void setup();
-    void loop();  
+    // Various functions
+    void addDevice(byte number, AquaBusDevice& device);
+    void initializeDevices();
+    void loop();
+
+  protected:
+    // Static member variables
+    static AquaBusDevice** devices;
 };
 
 #endif
