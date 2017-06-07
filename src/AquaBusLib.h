@@ -16,29 +16,33 @@
 // Included header files
 #include <arduino.h>
 #include "modbus/include/mb.h"
-#include "AquaBusDevice.h"
-#include "EB8.h"
+#include "AquaBusDev.h"
 
 // The AquaBusLib class
 class AquaBusLib
 {
+  // Make the AquaBusDev class friends with this class
+  friend class AquaBusDev;
+
   public:
     // Static member functions
     static eMBException probeCallback(byte* frame, unsigned short* length);
     static eMBException deviceCallback(byte* frame, unsigned short* length);
 
-    // Constructor and destructor
+    // Constructor
     AquaBusLib(byte numberOfDevices);
-    virtual ~AquaBusLib();
 
-    // Various functions
-    void addDevice(byte number, AquaBusDevice& device);
-    void initializeDevices();
+    // Member functions
+    void setup();
     void loop();
 
   protected:
     // Static member variables
-    static AquaBusDevice** devices;
+    static AquaBusDev** devices;
+    static byte devicesCount;
+
+    // Static member functions
+    static void addDevice(AquaBusDev* device);
 };
 
 #endif

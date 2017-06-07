@@ -10,16 +10,25 @@
 // This software is provided "as is" without express or implied warranty.
 
 // Include header files
-#include "AquaBusDevice.h"
 #include "modbus/include/mb.h"
 #include "modbus/include/mbframe.h"
+#include "AquaBusDev.h"
+#include "AquaBusLib.h"
 
 // Declare the function pointer used to send ModBus data
 static peMBFrameSend peMBFrameSendCur;
 
+// Constructor
+AquaBusDev::AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision) : 
+    hwId(hwId), hwSerial(hwSerial), hwRevision(hwRevision), swRevision(swRevision) 
+{
+  // Add outselves to the devices array
+  AquaBusLib::addDevice(this);
+}
+
 // Function called to send data
 // This function encapsulates the FreeModBus library function used to send the data
-void AquaBusDevice::sendData(byte address, byte* pucFrame, unsigned short length)
+inline void AquaBusDev::sendData(byte address, byte* frame, unsigned short length)
 {
-  peMBFrameSendCur(address, pucFrame, length);
+  peMBFrameSendCur(address, frame, length);
 }

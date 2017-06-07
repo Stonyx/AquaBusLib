@@ -9,12 +9,24 @@
 //
 // This software is provided "as is" without express or implied warranty.
 
+// Debug related definitions
+// #define DEBUG
+#ifdef DEBUG
+  #define DEBUG_LOG(string) Serial.print(string)
+  #define DEBUG_LOG_LN(string) Serial.println(string)
+#else
+  #define DEBUG_LOG(string)
+  #define DEBUG_LOG_LN(string)
+#endif
+#define DEBUG_LOG_FREE_RAM() DEBUG_LOG(F("Free RAM: ")); DEBUG_LOG_LN(FreeRam())
+
 // Include header files
 #include <string.h>
 #include "AquaBusLib.h"
 
 // Static member variables
-static AquaBusDevice** AquaBusLib::devices;
+static AquaBusDev** AquaBusLib::devices = NULL;
+static byte AquaBusLib::devicesCount = 0;
 
 // Static callback function for handling initial probing
 eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
@@ -46,7 +58,7 @@ eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
     };
 
     // Loop through the devices
-    for (byte i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
+    for (byte i = 0; i < devicesCount; ++i)
     {
       // Switch based on the probe stage
       switch (((Request*)frame)->probeStage)
@@ -90,7 +102,7 @@ eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
 eMBException AquaBusLib::deviceCallback(byte* frame, unsigned short* length)
 {
   // Loop through the devices
-  for (byte i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
+  for (byte i = 0; i < devicesCount; ++i)
   {
     // Check if the first byte of the frame which is the function code matches the device ID
     if (frame[0] == devices[i]->hwId)
@@ -106,26 +118,28 @@ eMBException AquaBusLib::deviceCallback(byte* frame, unsigned short* length)
 // Constructor
 AquaBusLib::AquaBusLib(byte numberOfDevices)
 {
-  // Allocate memory for the number of devices specified
-  devices = new AquaBusDevice*[numberOfDevices];
+  // Check if the devices array has to be allocated
+  if (devices == NULL)
+  {
+    // Allocate and initalize memory for the number of devices specified and save the devices count
+    devices = new AquaBusDev*[numberOfDevices]();
+    devicesCount = numberOfDevices;
+  }
+#ifdef DEBUG
+  // Check if a different device count was specified than before
+  else if (numberOfDevices != devicesCount)
+  {
+    DEBUG_LOG_LN("WARNING: Creating a second AquaBusLib object with a different number of devices");
+  }
+  else
+  {
+    DEBUG_LOG_LN("WARNING: Creating a second AquaBusLib object");
+  }
+#endif
 }
 
-// Destructor
-AquaBusLib::~AquaBusLib()
-{
-  // Free up memory
-  delete devices;
-}
-
-// Function called to add a device
-void AquaBusLib::addDevice(byte number, AquaBusDevice& device)
-{
-  // Save the passed in device
-  devices[number] = &device;
-}
-
-// Function called to initialize all devices that have been added
-void AquaBusLib::initializeDevices()
+// Function called from the sketch's setup function
+void AquaBusLib::setup()
 {
   // Initialize the FreeModBus library
   eMBInit(MB_RTU, 0x00, 0, 19200, MB_PAR_EVEN);
@@ -134,7 +148,7 @@ void AquaBusLib::initializeDevices()
   eMBRegisterCB(0x01, probeCallback);
 
   // Loop through the devices
-  for (byte i = 0; i < sizeof(devices) / sizeof(AquaBusDevice*); ++i)
+  for (byte i = 0; i < devicesCount; ++i)
   {
     // Register the device callback function with the FreeModBus library using the device ID 
     //   as the function code
@@ -149,4 +163,23 @@ void AquaBusLib::initializeDevices()
 void AquaBusLib::loop()
 {
   eMBPoll();
+}
+
+// Function called to add a device
+void AquaBusLib::addDevice(AquaBusDev* device)
+{
+  // Loop through the devices
+  byte i = 0;
+  for (; i < devicesCount; ++i)
+  {
+    // Check if this slot is available and save the passed in device
+    if (devices[i] == NULL)
+      devices[i] = device;
+  }
+
+#ifdef DEBUG
+  // Check if the devices array was full
+  if (i == devicesCount)
+    DEBUG_LOG_LN("WARNING: Trying to add too many devices");
+#endif
 }

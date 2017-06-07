@@ -10,30 +10,30 @@
 // This software is provided "as is" without express or implied warranty.
 
 // Ensure this header file is included only once
-#ifndef AquaBusDevice_h
-#define AquaBusDevice_h
+#ifndef AquaBusDev_h
+#define AquaBusDev_h
 
 // Include header files
 #include <arduino.h>
 
 // The AquaBusDevice class
-class AquaBusDevice
+class AquaBusDev
 {
   // Make the AquaBusLib class friends with this class
   friend class AquaBusLib;
 
   public:
-    // Constant fields
+    // Constant member fields
     const byte hwId;
     const unsigned short hwSerial;
     const byte hwRevision;
     const byte swRevision;
 
-    // Constructor
-    AquaBusDevice(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision) : 
-        hwId(hwId), hwSerial(hwSerial), hwRevision(hwRevision), swRevision(swRevision) {}
-
   protected:
+    // Constructor
+    AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision);
+
+    // Member functions
     virtual void processData(byte* data, unsigned short length) = 0;
     inline void sendData(byte address, byte* pucFrame, unsigned short length);
 };

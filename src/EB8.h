@@ -14,21 +14,18 @@
 #define EB8_h
 
 // Include header files
-#include "AquaBusDevice.h"
-
-// Define default device properties
-#define EB8_HW_ID 0x20
-#define EB8_HW_REVISION 0x01
-#define EB8_SW_REVISION 0x0C
+#include <arduino.h>
+#include "AquaBusDev.h"
 
 // The EB8 class
-class EB8 : public AquaBusDevice
+class EB8 : public AquaBusDev
 {
   public:
     // Constructors
-    EB8(unsigned short serial) : AquaBusDevice(EB8_HW_ID, serial, EB8_HW_REVISION, EB8_SW_REVISION) {}
+    EB8(unsigned short serial, byte swRevision) : AquaBusDev(0x20, serial, 0x01, swRevision) {}
 
-    // Function called to process received data
+  protected:
+    // Member functions
     void processData(byte* data, unsigned short length);
 };
 
