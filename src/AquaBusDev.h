@@ -22,20 +22,22 @@ class AquaBusDev
   // Make the AquaBusLib class friends with this class
   friend class AquaBusLib;
 
-  public:
+  protected:
     // Constant member fields
     const byte hwId;
     const unsigned short hwSerial;
     const byte hwRevision;
     const byte swRevision;
 
-  protected:
+    // Member variables
+    byte address;
+
     // Constructor
     AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision);
 
     // Member functions
     virtual void processData(byte* data, unsigned short length) = 0;
-    inline void sendData(byte address, byte* pucFrame, unsigned short length);
+    void sendData(byte address, byte* frame, unsigned short length);
 };
 
 #endif

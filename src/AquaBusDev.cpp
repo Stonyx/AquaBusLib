@@ -28,7 +28,7 @@ AquaBusDev::AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte
 
 // Function called to send data
 // This function encapsulates the FreeModBus library function used to send the data
-inline void AquaBusDev::sendData(byte address, byte* frame, unsigned short length)
+void AquaBusDev::sendData(byte address, byte* frame, unsigned short length)
 {
   peMBFrameSendCur(address, frame, length);
 }

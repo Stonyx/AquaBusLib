@@ -22,9 +22,16 @@ class EB8 : public AquaBusDev
 {
   public:
     // Constructors
-    EB8(unsigned short serial, byte swRevision) : AquaBusDev(0x20, serial, 0x01, swRevision) {}
+    EB8(unsigned short serial, byte swRevision) :
+        AquaBusDev(0x20, serial, 0x01, swRevision), outletStates(0) {}
+
+    // Member functions
+    bool getOutletState(byte outlet);
 
   protected:
+    // Member variables
+    byte outletStates;
+
     // Member functions
     void processData(byte* data, unsigned short length);
 };

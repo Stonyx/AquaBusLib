@@ -32,7 +32,7 @@ static byte AquaBusLib::devicesCount = 0;
 eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
 {
   // Check the length of the frame
-  if (*length == 8)
+  if (*length == 8) // Probe stages 1, 2, 3, and 5
   {
     // Define the request structure for frames with this length
     struct Request
@@ -40,52 +40,41 @@ eMBException AquaBusLib::probeCallback(byte* frame, unsigned short* length)
       byte functionCode;
       byte probeStage;
       byte nextAddress;
-      word hwSerial;
-      byte unknown[3];
-    };
-
-    // Define the response structure
-    struct Response
-    {
-      byte functionCode;
-      byte probeStage;
-      byte hwId;
-      byte hwRevision;
-      byte swRevision;
-      byte nextAddress;
-      word hwSerial;
+      unsigned short hwSerial;
       byte unknown[3];
     };
 
     // Loop through the devices
     for (byte i = 0; i < devicesCount; ++i)
     {
-      // Switch based on the probe stage
-      switch (((Request*)frame)->probeStage)
+      // Create the response structure
+      struct
       {
-        case 1:
-          // Prepare the response structure
-          Response response;
-          response.functionCode = ((Request*)frame)->functionCode;
-          response.probeStage = ((Request*)frame)->probeStage;
-          response.hwId = devices[i]->hwId;
-          // response.hwRevision
-          // response.swRevision
-          response.nextAddress = ((Request*)frame)->nextAddress;
-          // response.serialNumber
-          break;
-        case 2:
-          break;
-        case 3:
-          break;
-        case 5:
-          break;
-      }
+        byte functionCode;
+        byte probeStage;
+        byte hwId;
+        byte hwRevision;
+        byte swRevision;
+        byte nextAddress;
+        unsigned short hwSerial;
+        byte unknown[3] = {0, 0, 0};
+      } response;
+      response.functionCode = ((Request*)frame)->functionCode;
+      response.probeStage = ((Request*)frame)->probeStage;
+      response.hwId = devices[i]->hwId;
+      response.hwRevision = devices[i]->hwRevision;
+      response.swRevision = devices[i]->swRevision;
+      response.nextAddress = ((Request*)frame)->nextAddress;
+      response.hwSerial = devices[i]->hwSerial;
+
+      // Send the response
+      // TODO: figure out which address to actually send the response to
+      devices[i]->sendData(devices[i]->address, (byte*)&response, sizeof(response));
     }
   }
-  else if (*length == 5)
+  else if (*length == 5) // Probe stage 4
   {
-    // Define the request structore for frames with this length
+    // Define the request structure for frames with this length
     struct Request
     {
       byte functionCode;
