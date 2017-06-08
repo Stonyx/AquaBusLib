@@ -37,7 +37,7 @@ class AquaBusDev
 
     // Member functions
     virtual void processData(byte* data, unsigned short length) = 0;
-    void sendData(byte abAddress, byte* data, unsigned short length);
+    void sendData(byte* data, unsigned short length);
 };
 
 #endif

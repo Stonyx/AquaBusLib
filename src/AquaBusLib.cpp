@@ -31,56 +31,48 @@ static byte AquaBusLib::devicesCount = 0;
 // Static callback function for handling initial probing
 eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short* length)
 {
-  // Check the length of the frame
-  if (*length == 8) // Probe stages 1, 2, 3, and 5
+  // Define the request structure
+  struct Request
   {
-    // Define the request structure for frames with this length
-    struct Request
+    byte code;
+    byte stage;
+    byte nextAddress;
+    unsigned short hwSerial;
+    byte unknown[3];
+  };
+
+  // Check if we should ignore this stage
+  if (((Request*)frame)->stage == 5)
+    return MB_EX_NONE;
+
+  // Loop through the devices
+  for (byte i = 0; i < devicesCount; ++i)
+  {
+    // Create the response structure
+    struct
     {
       byte code;
       byte stage;
+      byte hwId;
+      byte hwRevision;
+      byte swRevision;
       byte nextAddress;
       unsigned short hwSerial;
       byte unknown[3];
-    };
+    } response;
+    response.code = ((Request*)frame)->code;
+    response.stage = ((Request*)frame)->stage;
+    response.hwId = devices[i]->hwId;
+    response.hwRevision = devices[i]->hwRevision;
+    response.swRevision = devices[i]->swRevision;
+    response.nextAddress = ((Request*)frame)->nextAddress;
+    response.hwSerial = devices[i]->hwSerial;
+    response.unknown[0] = 0;
+    response.unknown[1] = 0;
+    response.unknown[2] = 0;
 
-    // Loop through the devices
-    for (byte i = 0; i < devicesCount; ++i)
-    {
-      // Create the response structure
-      struct
-      {
-        byte code;
-        byte stage;
-        byte hwId;
-        byte hwRevision;
-        byte swRevision;
-        byte nextAddress;
-        unsigned short hwSerial;
-        byte unknown[3] = {0, 0, 0};
-      } response;
-      response.code = ((Request*)frame)->code;
-      response.stage = ((Request*)frame)->stage;
-      response.hwId = devices[i]->hwId;
-      response.hwRevision = devices[i]->hwRevision;
-      response.swRevision = devices[i]->swRevision;
-      response.nextAddress = ((Request*)frame)->nextAddress;
-      response.hwSerial = devices[i]->hwSerial;
-
-      // Send the response
-      devices[i]->sendData(devices[i]->abAddress, (byte*)&response, sizeof(response));
-    }
-  }
-  else if (*length == 5) // Probe stage 4
-  {
-    // Define the request structure for frames with this length
-    struct Request
-    {
-      byte code;
-      byte stage;
-      byte abAddress;
-      byte unknown[2];
-    };
+    // Send the response
+    devices[i]->sendData((byte*)&response, sizeof(response));
   }
 
   return MB_EX_NONE;

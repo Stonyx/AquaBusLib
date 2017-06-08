@@ -54,5 +54,5 @@ void EB8::processData(byte* data, unsigned short length)
   response.rawCurrent = 0;
 
   // Send the response
-  sendData(abAddress, (byte*)&response, sizeof(response));
+  sendData((byte*)&response, sizeof(response));
 }

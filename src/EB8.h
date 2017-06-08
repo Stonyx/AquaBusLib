@@ -22,6 +22,8 @@ class EB8 : public AquaBusDev
 {
   public:
     // Constructors
+    EB8(unsigned short serial) : 
+        AquaBusDev(0x20, serial, 0x01, 0x0C), outletStates(0) {}
     EB8(unsigned short serial, byte swRevision) :
         AquaBusDev(0x20, serial, 0x01, swRevision), outletStates(0) {}
 
