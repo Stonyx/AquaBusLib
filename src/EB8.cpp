@@ -24,20 +24,21 @@ void EB8::processData(byte* data, unsigned short length)
   // Define the request structure
   struct Request
   {
-    byte type;
+    byte hwId;
+    byte stage;
     byte outletStates;
     byte unknown;
   };
 
   // Check if we should update the outlet states
-  if (((Request*)data)->type == 1)
+  if (((Request*)data)->stage == 1)
     outletStates = ((Request*)data)->outletStates;
 
   // Create the response structure
   struct
   {
     byte hwId;
-    byte type;
+    byte stage;
     byte outletStates;
     byte unknown;
     unsigned short legacyCurrent;
@@ -45,7 +46,7 @@ void EB8::processData(byte* data, unsigned short length)
     unsigned long rawCurrent;
   } response;
   response.hwId = hwId;
-  response.type = (((Request*)data)->type);
+  response.stage = (((Request*)data)->stage);
   response.outletStates = outletStates;
   response.unknown = outletStates; // Seems to match the outletStates variable usually
   response.legacyCurrent = 0;
@@ -53,6 +54,5 @@ void EB8::processData(byte* data, unsigned short length)
   response.rawCurrent = 0;
 
   // Send the response
-  // TODO: figure out which address to actually send the response to
-  sendData(address, (byte*)&response, sizeof(response));
+  sendData(abAddress, (byte*)&response, sizeof(response));
 }

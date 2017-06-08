@@ -30,14 +30,14 @@ class AquaBusDev
     const byte swRevision;
 
     // Member variables
-    byte address;
+    byte abAddress;
 
     // Constructor
     AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision);
 
     // Member functions
     virtual void processData(byte* data, unsigned short length) = 0;
-    void sendData(byte address, byte* frame, unsigned short length);
+    void sendData(byte abAddress, byte* data, unsigned short length);
 };
 
 #endif

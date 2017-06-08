@@ -26,8 +26,8 @@ class AquaBusLib
 
   public:
     // Static member functions
-    static eMBException probeCallback(byte* frame, unsigned short* length);
-    static eMBException deviceCallback(byte* frame, unsigned short* length);
+    static eMBException probeCallback(byte address, byte* frame, unsigned short* length);
+    static eMBException deviceCallback(byte address, byte* frame, unsigned short* length);
 
     // Constructor
     AquaBusLib(byte numberOfDevices);
