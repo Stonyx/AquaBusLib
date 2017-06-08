@@ -360,11 +360,7 @@ eMBPoll( void )
             eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
             if( eStatus == MB_ENOERR )
             {
-                /* Check if the frame is for us. If not ignore the frame. */
-                if( ( ucRcvAddress == ucMBAddress ) || ( ucRcvAddress == MB_ADDRESS_BROADCAST ) )
-                {
-                    ( void )xMBPortEventPost( EV_EXECUTE );
-                }
+                ( void )xMBPortEventPost( EV_EXECUTE );
             }
             break;
 
@@ -380,27 +376,14 @@ eMBPoll( void )
                 }
                 else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )
                 {
-                    eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );
+                    eException = xFuncHandlers[i].pxHandler( ucRcvAddress, ucMBFrame, usLength );
                     break;
                 }
-            }
-
-            /* If the request was not sent to the broadcast address we
-             * return a reply. */
-            if( ucRcvAddress != MB_ADDRESS_BROADCAST )
-            {
-                if( eException != MB_EX_NONE )
+                else
                 {
-                    /* An exception occured. Build an error frame. */
-                    usLength = 0;
-                    ucMBFrame[usLength++] = ( UCHAR )( ucFunctionCode | MB_FUNC_ERROR );
-                    ucMBFrame[usLength++] = eException;
+                    eException = xFuncHandlers[MB_FUNC_HANDLERS_MAX - 1].pxHandler( ucRcvAddress, 
+                        ucMBFrame, usLength );
                 }
-                if( ( eMBCurrentMode == MB_ASCII ) && MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS )
-                {
-                    vMBPortTimersDelay( MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
-                }                
-                eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
             }
             break;
 
