@@ -2,4 +2,4 @@
 
 ### Contents
 
-[Data Structures](structures.html)
+- [Data Structures](structures.html)
