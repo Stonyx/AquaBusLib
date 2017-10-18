@@ -174,14 +174,14 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
     
     DEBUG_LOG("Received Buffer Size = ");
         DEBUG_LOG_LN(( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC ));
-        DEBUG_LOG("Received Buffer = \"");
-        for (int i = 0; i < ( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC ); i++)
-        {
-        	UCHAR bla = ucRTUBuf[MB_SER_PDU_PDU_OFF+i];
-        	DEBUG_LOG_HEX(bla);
-        	DEBUG_LOG(" ");
-        }
-        DEBUG_LOG_LN("\"");
+//        DEBUG_LOG("Received Buffer = \"");
+//        for (int i = 0; i < ( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC ); i++)
+//        {
+//        	UCHAR bla = ucRTUBuf[MB_SER_PDU_PDU_OFF+i];
+//        	DEBUG_LOG_HEX(bla);
+//        	DEBUG_LOG(" ");
+//        }
+//        DEBUG_LOG_LN("\"");
 
     /* Length and CRC check */
     if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
