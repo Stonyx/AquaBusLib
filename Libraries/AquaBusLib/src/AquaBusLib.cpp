@@ -37,7 +37,7 @@ eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short
 	DEBUG_LOG_LN("probeCallback enter");
   // Define the request structure
   int i = 0;
-  struct Request
+  struct AB_PROBE_REQUEST_PACKET
   {
     byte code;
     byte stage;
@@ -47,14 +47,14 @@ eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short
   };
 
   // Check if we should ignore this stage
-  if (((Request*)frame)->stage == 5)
+  if (((AB_PROBE_REQUEST_PACKET*)frame)->stage == 5)
     return MB_EX_NONE;
 
   // Loop through the devices
   //for (byte i = 0; i < devicesCount; ++i)
   //{
     // Create the response structure
-    struct RESPONSE
+    struct AB_PROBE_RESPONSE_PACKET
     {
       byte code;
       byte stage;
@@ -69,23 +69,23 @@ eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short
    	struct 
    	{
    		byte address;
-   		RESPONSE response;
+   		AB_PROBE_RESPONSE_PACKET response;
    		unsigned short crc;
    	} responseFrame;
     
- 
-    responseFrame.response.code = ((Request*)frame)->code;
-    responseFrame.response.stage = ((Request*)frame)->stage;
+ 		responseFrame.address = ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
+    responseFrame.response.code = ((AB_PROBE_REQUEST_PACKET*)frame)->code;
+    responseFrame.response.stage = ((AB_PROBE_REQUEST_PACKET*)frame)->stage;
     responseFrame.response.hwId = devices[i]->hwId;
     responseFrame.response.hwRevision = devices[i]->hwRevision;
     responseFrame.response.swRevision = devices[i]->swRevision;
-    responseFrame.response.nextAddress = ((Request*)frame)->nextAddress;
-    responseFrame.response.hwSerial = devices[i]->hwSerial;
+    responseFrame.response.nextAddress = ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
+    responseFrame.response.hwSerial = ((AB_PROBE_REQUEST_PACKET*)frame)->hwSerial;
     responseFrame.response.unknown[0] = 0;
     responseFrame.response.unknown[1] = 0;
     responseFrame.response.unknown[2] = 0;
 		DEBUG_LOG("response = [");
-		for (int bla = 0; bla < 14; bla++)
+		for (int bla = 0; bla < sizeof(AB_PROBE_RESPONSE_PACKET); bla++)
 		{
 			DEBUG_LOG_HEX(((byte*)(&responseFrame.response))[bla]);
 			DEBUG_LOG(" ");
@@ -93,7 +93,7 @@ eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short
 		DEBUG_LOG_LN("]");
     // Send the response
 		DEBUG_LOG_LN("probeCallback: Sending Response");
-		devices[i]->sendData((byte*)(&responseFrame.response), sizeof(RESPONSE));
+		devices[i]->sendData((byte*)(&responseFrame.response), sizeof(AB_PROBE_RESPONSE_PACKET));
   //}
 
 	DEBUG_LOG_LN("probeCallback exit");
