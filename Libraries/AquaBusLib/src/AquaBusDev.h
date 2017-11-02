@@ -31,13 +31,16 @@ class AquaBusDev
 
     // Member variables
     byte abAddress;
+    unsigned short ApexSerial;
+    bool bAttached;
 
     // Constructor
     AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte swRevision);
 
     // Member functions
-    virtual void processData(byte* data, unsigned short length) = 0;
-    void sendData(byte* data, unsigned short length);
+    virtual void processData(byte deviceABAddr, byte* data, unsigned short length) = 0;
+    virtual void processEEPROMRequest(byte deviceABAddr, byte* data, unsigned short length) = 0;
+    void sendData(byte destABAddr, byte* data, unsigned short length);
 };
 
 #endif

@@ -57,7 +57,7 @@
 #define MB_PORT_HAS_CLOSE 0
 #endif
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 	#include <SoftwareSerial.h>
 	extern SoftwareSerial Serial2; // 6 is RX, 7 is TX
@@ -364,18 +364,20 @@ eMBPoll( void )
      * Otherwise we will handle the event. */
     if( xMBPortEventGet( &eEvent ) == TRUE )
     {
-    		DEBUG_LOG_LN("eMBPoll G0T EVENT");
+    		//DEBUG_LOG_LN("eMBPoll G0T EVENT");
         switch ( eEvent )
         {
         case EV_READY:
-        		DEBUG_LOG_LN("eMBPoll EV_READY");
+        		//DEBUG_LOG_LN("eMBPoll EV_READY");
             break;
 
         case EV_FRAME_RECEIVED:
-        		DEBUG_LOG_LN("eMBPoll EV_FRAME_RECEIVED");
-            eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
+        		eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
             if( eStatus == MB_ENOERR )
             {
+            	DEBUG_LOG_LN("eMBPoll EV_FRAME_RECEIVED");
+            	DEBUG_LOG("ucRcvAddress = ");
+            	DEBUG_LOG_LN(ucRcvAddress);
                 ( void )xMBPortEventPost( EV_EXECUTE );
             }
             break;
@@ -399,11 +401,6 @@ eMBPoll( void )
                 {
                     eException = xFuncHandlers[i].pxHandler( ucRcvAddress, ucMBFrame, usLength );
                     break;
-                }
-                else
-                {
-                    eException = xFuncHandlers[MB_FUNC_HANDLERS_MAX - 1].pxHandler( ucRcvAddress, 
-                        ucMBFrame, usLength );
                 }
             }
             break;

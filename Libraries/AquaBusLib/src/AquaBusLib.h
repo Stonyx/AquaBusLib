@@ -18,6 +18,25 @@
 #include "modbus/include/mb.h"
 #include "AquaBusDev.h"
 
+struct AB_PROBE_RESPONSE_PACKET
+{
+	byte code;
+	byte stage;
+	byte hwId;
+	byte hwRevision;
+	byte swRevision;
+	byte nextAddress;
+	unsigned short hwSerial;
+	byte unknown[3];
+}__attribute__((packed));
+    
+struct AB_PROBE_RESPONSE_FRAME
+{
+	byte address;
+	AB_PROBE_RESPONSE_PACKET response;
+	unsigned short crc;
+}__attribute__((packed));
+
 // The AquaBusLib class
 class AquaBusLib
 {
@@ -28,6 +47,8 @@ class AquaBusLib
     // Static member functions
     static eMBException probeCallback(byte address, byte* frame, unsigned short length);
     static eMBException deviceCallback(byte address, byte* frame, unsigned short length);
+    static eMBException deviceEEPROMCallback(byte address, byte* frame, unsigned short length);
+    static AB_PROBE_RESPONSE_FRAME ProbeResponseFrame;
 
     // Constructor
     AquaBusLib(byte numberOfDevices);

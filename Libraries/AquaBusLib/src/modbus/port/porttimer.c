@@ -49,6 +49,7 @@ xMBPortTimersInit( USHORT usTim1Timerout50us )
         ( MB_TIMER_TICKS * usTim1Timerout50us ) / ( MB_50US_TICKS );
 
     TCCR1A = 0x00;
+    //Apex Atmega88pa sets this to 3 to lower frequency
     TCCR1B = 0x00;
     TCCR1C = 0x00;
 

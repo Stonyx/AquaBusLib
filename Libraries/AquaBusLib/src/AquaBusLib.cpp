@@ -10,7 +10,7 @@
 // This software is provided "as is" without express or implied warranty.
 
 // Debug related definitions
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 	#include <SoftwareSerial.h>
 	extern SoftwareSerial Serial2;
@@ -30,6 +30,8 @@
 // Static member variables
 AquaBusDev** AquaBusLib::devices = NULL;
 byte AquaBusLib::devicesCount = 0;
+AB_PROBE_RESPONSE_FRAME AquaBusLib::ProbeResponseFrame = {};
+
 
 // Static callback function for handling initial probing
 eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short length)
@@ -44,57 +46,54 @@ eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short
     byte nextAddress;
     unsigned short hwSerial;
     byte unknown[3];
-  };
+  }__attribute__((packed));
 
+	//check if already attached
+	if (devices[i]->bAttached)
+		return MB_EX_NONE;
+		
   // Check if we should ignore this stage
-  if (((AB_PROBE_REQUEST_PACKET*)frame)->stage == 5)
+  if (((AB_PROBE_REQUEST_PACKET*)frame)->stage == 4)
     return MB_EX_NONE;
 
-  // Loop through the devices
-  //for (byte i = 0; i < devicesCount; ++i)
-  //{
-    // Create the response structure
-    struct AB_PROBE_RESPONSE_PACKET
-    {
-      byte code;
-      byte stage;
-      byte hwId;
-      byte hwRevision;
-      byte swRevision;
-      byte nextAddress;
-      unsigned short hwSerial;
-      byte unknown[3];
-    };
-    
-   	struct 
-   	{
-   		byte address;
-   		AB_PROBE_RESPONSE_PACKET response;
-   		unsigned short crc;
-   	} responseFrame;
-    
- 		responseFrame.address = ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
-    responseFrame.response.code = ((AB_PROBE_REQUEST_PACKET*)frame)->code;
-    responseFrame.response.stage = ((AB_PROBE_REQUEST_PACKET*)frame)->stage;
-    responseFrame.response.hwId = devices[i]->hwId;
-    responseFrame.response.hwRevision = devices[i]->hwRevision;
-    responseFrame.response.swRevision = devices[i]->swRevision;
-    responseFrame.response.nextAddress = ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
-    responseFrame.response.hwSerial = ((AB_PROBE_REQUEST_PACKET*)frame)->hwSerial;
-    responseFrame.response.unknown[0] = 0;
-    responseFrame.response.unknown[1] = 0;
-    responseFrame.response.unknown[2] = 0;
-		DEBUG_LOG("response = [");
-		for (int bla = 0; bla < sizeof(AB_PROBE_RESPONSE_PACKET); bla++)
-		{
-			DEBUG_LOG_HEX(((byte*)(&responseFrame.response))[bla]);
-			DEBUG_LOG(" ");
-		}
-		DEBUG_LOG_LN("]");
-    // Send the response
-		DEBUG_LOG_LN("probeCallback: Sending Response");
-		devices[i]->sendData((byte*)(&responseFrame.response), sizeof(AB_PROBE_RESPONSE_PACKET));
-  //}
+  
+	if ((((AB_PROBE_REQUEST_PACKET*)frame)->stage == 1 || ((AB_PROBE_REQUEST_PACKET*)frame)->stage == 2) && devices[i]->abAddress && devices[i]->ApexSerial)
+  {
+  	//this device has already been registered with an apex
+  	//attempt to reattach existing		
+  	ProbeResponseFrame.response.nextAddress = devices[i]->abAddress;
+  	ProbeResponseFrame.response.hwSerial = devices[i]->ApexSerial;
+  }
+  else
+  {
+  	ProbeResponseFrame.response.nextAddress = ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
+    ProbeResponseFrame.response.hwSerial = ((AB_PROBE_REQUEST_PACKET*)frame)->hwSerial;
+  }
+  
+  if (((AB_PROBE_REQUEST_PACKET*)frame)->stage == 3)
+  {
+  	//this is the probeSET request
+  	//save new device config to eeprom
+  	devices[i]->abAddress = ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
+  	devices[i]->ApexSerial = ((AB_PROBE_REQUEST_PACKET*)frame)->hwSerial;
+  	eeprom_update_byte(0, ((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress);
+  	eeprom_update_word(1, ((AB_PROBE_REQUEST_PACKET*)frame)->hwSerial);
+  }
+  	  	
+    ProbeResponseFrame.address = 0;//((AB_PROBE_REQUEST_PACKET*)frame)->nextAddress;
+    ProbeResponseFrame.response.code = ((AB_PROBE_REQUEST_PACKET*)frame)->code;
+    ProbeResponseFrame.response.stage = ((AB_PROBE_REQUEST_PACKET*)frame)->stage;
+    ProbeResponseFrame.response.hwId = devices[i]->hwId;
+    ProbeResponseFrame.response.hwRevision = devices[i]->hwRevision;
+    ProbeResponseFrame.response.swRevision = devices[i]->swRevision;
+    ProbeResponseFrame.response.unknown[0] = 0;
+    ProbeResponseFrame.response.unknown[1] = 0;
+    ProbeResponseFrame.response.unknown[2] = 0;
+
+		devices[i]->sendData(0, (byte*)(&ProbeResponseFrame.response), sizeof(AB_PROBE_RESPONSE_PACKET));
+		
+		if (((AB_PROBE_REQUEST_PACKET*)frame)->stage == 5)
+			devices[i]->bAttached = true;
 
 	DEBUG_LOG_LN("probeCallback exit");
   return MB_EX_NONE;
@@ -103,28 +102,47 @@ eMBException AquaBusLib::probeCallback(byte address, byte* frame, unsigned short
 // Static callback function for handling device communication
 eMBException AquaBusLib::deviceCallback(byte address, byte* frame, unsigned short length)
 {
+	int i = 0;
   DEBUG_LOG_LN("deviceCallback enter");
   DEBUG_LOG("deviceCallback");
   DEBUG_LOG("devicesCount = ");
   DEBUG_LOG_LN(devicesCount);
+  DEBUG_LOG("address = ");
+  DEBUG_LOG_LN(address);
   
   // Loop through the devices
-  for (byte i = 0; i < devicesCount; ++i)
-  {
+  //for (byte i = 0; i < devicesCount; ++i)
+  //{
     // Check if the address matches the device's AquaBus address
     if (address == devices[i]->abAddress)
     {
     	DEBUG_LOG_LN("deviceCallback: calling processData");
       // Call the device's processData function
-      devices[i]->processData(frame, length);
+      devices[i]->processData(address, frame, length);
     }
     else
     {
     	DEBUG_LOG_LN("deviceCallback: abAddress doesn't match");		
     }
-  }
+  //}
 
 	DEBUG_LOG_LN("deviceCallback exit");
+  return MB_EX_NONE;
+}
+
+// Static callback function for handling device EEPROM communication
+eMBException AquaBusLib::deviceEEPROMCallback(byte address, byte* frame, unsigned short length)
+{
+	int i = 0;
+  // Check if the address matches the device's AquaBus address
+  if (address == devices[i]->abAddress)
+  {
+    devices[i]->processEEPROMRequest(address, frame, length);
+  }
+  else
+  {
+  	DEBUG_LOG_LN("deviceEEPROMCallback: abAddress doesn't match");		
+  }
   return MB_EX_NONE;
 }
 
@@ -173,11 +191,17 @@ void AquaBusLib::setup()
   else
   	DEBUG_LOG_LN("eMBRegisterCB probeCallback success");
   	
-  ret = eMBRegisterCB(0x7F, deviceCallback);
+  ret = eMBRegisterCB(0x20, deviceCallback);
   if (ret != MB_ENOERR)
   	DEBUG_LOG_LN("ERROR: eMBRegisterCB deviceCallback");
   else
   	DEBUG_LOG_LN("eMBRegisterCB deviceCallback success");
+  	
+   ret = eMBRegisterCB(0x8, deviceEEPROMCallback);
+  if (ret != MB_ENOERR)
+  	DEBUG_LOG_LN("ERROR: eMBRegisterCB deviceEEPROMCallback");
+  else
+  	DEBUG_LOG_LN("eMBRegisterCB deviceEEPROMCallback success");
 
   // Enable the FreeModBus library
   ret = eMBEnable();

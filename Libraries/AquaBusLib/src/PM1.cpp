@@ -26,5 +26,5 @@ void PM1::processData(byte* data, unsigned short length)
   } response;
 
   // Send the response
-  sendData((byte*)&response, sizeof(response));
+  sendData(0, (byte*)&response, sizeof(response));
 }

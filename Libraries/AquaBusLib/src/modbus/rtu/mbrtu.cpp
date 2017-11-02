@@ -45,7 +45,7 @@
 
 #include <string.h>
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 	#include <SoftwareSerial.h>
 	extern SoftwareSerial Serial2;
@@ -55,6 +55,7 @@
 #else
   #define DEBUG_LOG(string)
   #define DEBUG_LOG_LN(string)
+  #define DEBUG_LOG_HEX(string)
 #endif 
 
 /* ----------------------- Defines ------------------------------------------*/
@@ -83,12 +84,14 @@ typedef enum
 static volatile eMBSndState eSndState;
 static volatile eMBRcvState eRcvState;
 
-volatile UCHAR  ucRTUBuf[MB_SER_PDU_SIZE_MAX];
-
 static volatile UCHAR *pucSndBufferCur;
 static volatile USHORT usSndBufferCount;
 
 static volatile USHORT usRcvBufferPos;
+
+volatile UCHAR  ucRTUBuf[MB_SER_PDU_SIZE_MAX];
+
+
 
 /* ----------------------- Start implementation -----------------------------*/
 eMBErrorCode
@@ -125,6 +128,8 @@ eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity ePar
              * for t3.5.
              */
             usTimerT35_50us = ( 7UL * 220000UL ) / ( 2UL * ulBaudRate );
+            //Apex Atmega88pa based implementation sets this to 80
+            //usTimerT35_50us = 80;
         }
         if( xMBPortTimersInit( ( USHORT ) usTimerT35_50us ) != TRUE )
         {
@@ -172,17 +177,21 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
     ENTER_CRITICAL_SECTION(  );
     assert( usRcvBufferPos < MB_SER_PDU_SIZE_MAX );
     
+#ifdef DEBUG
     DEBUG_LOG("Received Buffer Size = ");
-        DEBUG_LOG_LN(( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC ));
-//        DEBUG_LOG("Received Buffer = \"");
-//        for (int i = 0; i < ( USHORT )( usRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC ); i++)
-//        {
-//        	UCHAR bla = ucRTUBuf[MB_SER_PDU_PDU_OFF+i];
-//        	DEBUG_LOG_HEX(bla);
-//        	DEBUG_LOG(" ");
-//        }
-//        DEBUG_LOG_LN("\"");
-
+    DEBUG_LOG_LN(usRcvBufferPos);
+    if (usRcvBufferPos > 0)
+    {
+    	DEBUG_LOG("Received Buffer = \"");
+    	for (int i = 0; i < usRcvBufferPos; i++)
+      {
+      	UCHAR bla = ucRTUBuf[i];
+      	DEBUG_LOG_HEX(bla);
+      	DEBUG_LOG(" ");
+      }
+      DEBUG_LOG_LN("\"");
+    }
+#endif
     /* Length and CRC check */
     if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
         && ( usMBCRC16( ( UCHAR * ) ucRTUBuf, usRcvBufferPos ) == 0 ) )
@@ -235,13 +244,13 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
         usSndBufferCount = 1;
 
         /* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
-        //pucSndBufferCur[MB_SER_PDU_ADDR_OFF] = ucSlaveAddress;
+        pucSndBufferCur[MB_SER_PDU_ADDR_OFF] = ucSlaveAddress;
         usSndBufferCount += usLength;
 
         /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
         usCRC16 = usMBCRC16( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
-        ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );
-        ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 >> 8 );
+        pucSndBufferCur[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );
+        pucSndBufferCur[usSndBufferCount++] = ( UCHAR )( usCRC16 >> 8 );
 
         /* Activate the transmitter. */
         eSndState = STATE_TX_XMIT;
@@ -312,8 +321,8 @@ xMBRTUReceiveFSM( void )
         if( usRcvBufferPos < MB_SER_PDU_SIZE_MAX )
         {
             ucRTUBuf[usRcvBufferPos++] = ucByte;
-            DEBUG_LOG_HEX(ucByte);
-        		DEBUG_LOG(" ");
+//            DEBUG_LOG_HEX(ucByte);
+//        		DEBUG_LOG(" ");
         }
         else
         {
@@ -331,7 +340,7 @@ xMBRTUTransmitFSM( void )
 {
     BOOL            xNeedPoll = FALSE;
     
-    DEBUG_LOG_LN("xMBRTUTransmitFSM enter");
+    //DEBUG_LOG_LN("xMBRTUTransmitFSM enter");
 
     assert( eRcvState == STATE_RX_IDLE );
     
@@ -346,16 +355,19 @@ xMBRTUTransmitFSM( void )
         break;
 
     case STATE_TX_XMIT:
-    		DEBUG_LOG_LN("STATE_TX_XMIT enter");
+    		//DEBUG_LOG_LN("STATE_TX_XMIT enter");
         /* check if we are finished. */
         if( usSndBufferCount != 0 )
         {
+        	DEBUG_LOG(" ");
+        	DEBUG_LOG_HEX((UCHAR)*pucSndBufferCur);
             xMBPortSerialPutByte( ( CHAR )*pucSndBufferCur );
             pucSndBufferCur++;  /* next byte in sendbuffer. */
             usSndBufferCount--;
         }
         else
         {
+        		DEBUG_LOG_LN("xMBRTUTransmitFSM: frame sent");
             xNeedPoll = xMBPortEventPost( EV_FRAME_SENT );
             /* Disable transmitter. This prevents another transmit buffer
              * empty interrupt. */

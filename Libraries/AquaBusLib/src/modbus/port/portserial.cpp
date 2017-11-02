@@ -80,6 +80,8 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
     (void)ucPORT;
 	
     UBRR = UART_BAUD_CALC( ulBaudRate, F_CPU );
+    //Apex Atmega88pa sets this to 25
+    //UBRR = 25;
 
     switch ( eParity )
     {
@@ -102,6 +104,9 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
             ucUCSRC |= _BV( UCSZ1 );
             break;
     }
+    
+    //Set stop bit
+    ucUCSRC |= _BV(USBS0);
 
 #if defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88P__) || \
     defined (__AVR_ATmega88PA__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__) || \
