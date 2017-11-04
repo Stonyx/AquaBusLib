@@ -7,5 +7,6 @@ Aquabus CAN Transceiver Schematics:
 ![Example 1. Aquabus CAN Transceiver Schematics](https://github.com/Stonyx/AquaBusLib/raw/master/docs/AquaBusSchematic1.JPG)
 
 In addition to CAN related pins, Apex also provides 12V power over the remaining two pins.
+
 Apex AquaBus Port Pinout:
 ![Example 2. Aquabus Port Pinout](https://github.com/Stonyx/AquaBusLib/raw/master/docs/USB_Socket%20Pinout.png)
