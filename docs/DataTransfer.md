@@ -117,6 +117,7 @@ struct AB_PROBE_RESPONSE_PACKET
 In the response, the device keeps the original Function Code and stage Probe Stage provided in the request. It also claims the available AB address in ABAddress field and acqnowledges Apex Serial nuber received. In addition, it also provides its hardware ID, hardware revision number and software (firmware) revision number. Apex uses this information to validate that the device can be supported by the version of Apex that it is trying to attach to. 
 
 As of Apex firmware update 4.52_5A17, the following list of devices is known:
+```
 +-----------------+-------+------+----------+----------+
 |Module           | HW_ID |HW_Rev|SW_Rev_Min|SW_Rev_Max|
 +-----------------+-------+------+----------+----------+
@@ -139,5 +140,6 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 |WAV              |  0x29 |   3  |  16      |    16    |
 |1Link            |  0x2A |   1  |   4      |     4    |
 +-----------------+-------+------+----------+----------+
+```
 
 From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
