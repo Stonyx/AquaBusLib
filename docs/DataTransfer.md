@@ -59,7 +59,7 @@ struct AB_PROBE_REQUEST_PACKET
 {
   byte FunctionCode;
   byte ProbeStage;
-  byte nextAddress;
+  byte Address;
   unsigned short ApexSerialNumber;
   byte unknown[3];
 }
@@ -76,7 +76,7 @@ Apex sends this request to the broadcast address 0x00 for all devices to pick up
 | 0x02          | Second state of probe request. Apex sends this if the response from initial stage  |
 |               | came from device not previously registered with Apex                               |
 +---------------+------------------------------------------------------------------------------------+
-| 0x03          | Third stage of probe request. Apex agreed to installed the new device and is in    |
+| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in    |
 |               | final configuration stage                                                          |
 +---------------+------------------------------------------------------------------------------------+
 | 0x05          | Final Stage of probe request. Also called the Attach stage. This is the request    |
@@ -85,6 +85,7 @@ Apex sends this request to the broadcast address 0x00 for all devices to pick up
 +---------------+------------------------------------------------------------------------------------+
 ```
 
+#### Probe Request Stage 1
 In the first probe stage, Apex sends two important pieces of information: Next available AquaBus address and Apex's serial number. This way the device being probed can check if it has already been previously attached to this Apex and on what address. Or if this is a new device, it can take the next available AquaBus address on registration.
 The first two AquaBus addresses (0x01 and 0x02) are always reserved for up to two Displays. Typically, the next available address (0x03) gets taken by the Power Bar (Energy Bar), but this is not strictly reserved for it.
 Here's an example of a complete initial probe request:
@@ -100,7 +101,7 @@ Where:
   0x000000 - unknown. Appears to be reserved and unused
   0x736F - Modbus CRC16 checksum
   
-Since this is a new device, it takes NextAddress and ApexSerialNumber values from the request, verifies internally that it has no record of previous connections to this Apex head unit, and send the response back. The structure of the response is as follows:
+Since this is a new device, it takes Address and ApexSerialNumber values from the request, verifies internally that it has no record of previous connections to this Apex head unit, and send the response back. The structure of the response is as follows:
 ```
 struct AB_PROBE_RESPONSE_PACKET
 {
@@ -143,3 +144,13 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 ```
 
 From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
+
+####Probe Request Stage 2
+
+Apex may issues Probe Request Stage 2 if the device being attached has never previously registered with Apex. The Stage 2 request packet is identical to Stage 1, except for the updated ProbeStage field set to 2. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). The device response is also identical to the response to Stage 1 except for the ProbeStage Field.
+
+####Probe Request Stage 3
+This is the SET stage of the new device probe. In this stage, Apex agrees to install the new device and updates it's own internal structures with information about the device. Apex sends the Stage 3 request to let the device know that it is set and allow the device to update it's internal stage as well with information about the Apex head unit it is now connected to, such as Apex serial number and AB address. Otherwise, information in Stage 3 request and response is identical to the previous two stages. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). After this stage, the device will be recognized by the Apex even after power loss or loss of communication.
+
+####Probe Request Stage 5
+This is the Attach stage of the probe cycle. Apex sends this request only to previously set devices. The format of the request and the expected response repeat previous probe stages. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). This request tells the device that it's now attached to Apex and should expect regular communication from this point on. The response tells Apex that the device acknowledges attachment and is ready for communication.
