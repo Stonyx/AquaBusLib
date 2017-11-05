@@ -6,7 +6,11 @@ At the physical layer, AquaBus is implemented using a standard CAN transceiver. 
 Aquabus CAN Transceiver Schematics:
 ![Example 1. Aquabus CAN Transceiver Schematics](https://github.com/Stonyx/AquaBusLib/raw/master/docs/AquaBusSchematic1.JPG)
 
+Note that the configuration specific to MAX3059 and Apex, the TERM pin on MAX3059 must be driven HIGH and RS pin - LOW.
+
 In addition to CAN related pins, Apex also provides 12V power over the remaining two pins.
 
 Apex AquaBus Port Pinout:
 ![Example 2. Aquabus Port Pinout](https://github.com/Stonyx/AquaBusLib/raw/master/docs/USB_Socket%20Pinout.png)
+
+In this configuration, you can use the 12v power supplied by Aquabus to power small electronic components, such as Arduino.
