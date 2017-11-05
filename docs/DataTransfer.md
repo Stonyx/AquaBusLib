@@ -145,12 +145,12 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 
 From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
 
-####Probe Request Stage 2
+#### Probe Request Stage 2
 
 Apex may issues Probe Request Stage 2 if the device being attached has never previously registered with Apex. The Stage 2 request packet is identical to Stage 1, except for the updated ProbeStage field set to 2. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). The device response is also identical to the response to Stage 1 except for the ProbeStage Field.
 
-####Probe Request Stage 3
+#### Probe Request Stage 3
 This is the SET stage of the new device probe. In this stage, Apex agrees to install the new device and updates it's own internal structures with information about the device. Apex sends the Stage 3 request to let the device know that it is set and allow the device to update it's internal stage as well with information about the Apex head unit it is now connected to, such as Apex serial number and AB address. Otherwise, information in Stage 3 request and response is identical to the previous two stages. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). After this stage, the device will be recognized by the Apex even after power loss or loss of communication.
 
-####Probe Request Stage 5
+#### Probe Request Stage 5
 This is the Attach stage of the probe cycle. Apex sends this request only to previously set devices. The format of the request and the expected response repeat previous probe stages. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). This request tells the device that it's now attached to Apex and should expect regular communication from this point on. The response tells Apex that the device acknowledges attachment and is ready for communication.
