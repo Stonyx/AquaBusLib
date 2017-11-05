@@ -27,11 +27,15 @@ Stop bits: 1
 
 ### Known Apex Function Codes
 
-This is the list of known Function Codes supported by Apex
-| Function Code | Description |
-|---|---|
-| 0x01 | Device Probe Request. Used to attach new and existing devices to Apex  |
-| 0x07 | Device firmware update Request. Used by Apex to push firmware updates to connected devices|
+This is the list of known Function Codes supported by Apex:
+```
++---------------+--------------------------------------------------------------------------------------------+
+| Function Code | Description                                                                                |
++---------------+--------------------------------------------------------------------------------------------+
+| 0x01          | Device Probe Request. Used to attach new and existing devices to Apex                      |
+| 0x07          | Device firmware update Request. Used by Apex to push firmware updates to connected devices |
++---------------+--------------------------------------------------------------------------------------------+
+```
 
 ## Apex Device Communication
 
