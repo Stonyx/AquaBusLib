@@ -84,3 +84,60 @@ Apex sends this request to the broadcast address 0x00 for all devices to pick up
 |               | This is also the request sent to known devices on reattach.                        |
 +---------------+------------------------------------------------------------------------------------+
 ```
+
+In the first probe stage, Apex sends two important pieces of information: Next available AquaBus address and Apex's serial number. This way the device being probed can check if it has already been previously attached to this Apex and on what address. Or if this is a new device, it can take the next available AquaBus address on registration.
+The first two AquaBus addresses (0x01 and 0x02) are always reserved for up to two Displays. Typically, the next available address (0x03) gets taken by the Power Bar (Energy Bar), but this is not strictly reserved for it.
+Here's an example of a complete initial probe request:
+```
+00 01 01 03 34 12 00 00 00 6F 73
+```
+Where:
+  0x00 - Modbus broadcast address
+  0x01 - Device Probe Request
+  0x01 - Initial Stage Probe Request
+  0x03 - Next available Modbus (AquaBus) address
+  0x1234 - Apex Serial Number
+  0x000000 - unknown. Appears to be reserved and unused
+  0x736F - Modbus CRC16 checksum
+  
+Since this is a new device, it takes NextAddress and ApexSerialNumber values from the request, verifies internally that it has no record of previous connections to this Apex head unit, and send the response back. The structure of the response is as follows:
+```
+struct AB_PROBE_RESPONSE_PACKET
+{
+	byte FunctionCode;
+	byte ProbeStage;
+	byte hwId;
+	byte hwRevision;
+	byte swRevision;
+	byte ABAddress;
+	unsigned short ApexSerial;
+	byte unknown[3];
+}
+```
+In the response, the device keeps the original Function Code and stage Probe Stage provided in the request. It also claims the available AB address in ABAddress field and acqnowledges Apex Serial nuber received. In addition, it also provides its hardware ID, hardware revision number and software (firmware) revision number. Apex uses this information to validate that the device can be supported by the version of Apex that it is trying to attach to. 
+
+As of Apex firmware update 4.52_5A17, the following list of devices is known:
++-----------------+-------+------+----------+----------+
+|Module           | HW_ID |HW_Rev|SW_Rev_Min|SW_Rev_Max|
++-----------------+-------+------+----------+----------+
+|Display          |  0x1  |   1  |  10      |    11    |
+|PM1              |  0x11 |   1  |   4      |     7    |
+|PM2              |  0x12 |   1  |   2      |     3    |
+|PM3              |  0x13 |   1  |   3      |     7    |
+|ALD              |  0x14 |   1  |   7      |     7    |
+|ASM              |  0x15 |   1  |   7      |     7    |
+|FMM              |  0x16 |   1  |   5      |     5    |
+|EB8              |  0x20 |   1  |   9      |    12    |
+|WXM              |  0x21 |   1  |  10      |    11    |
+|EB4              |  0x22 |   1  |   9      |    12    |
+|VDM              |  0x23 |   1  |  13      |    13    |
+|LSM              |  0x24 |   1  |  13      |    13    |
+|EB6              |  0x25 |   1  |  11      |    12    |
+|AWM              |  0x26 |   1  |   7      |     7    |
+|AFS              |  0x27 |   1  |   2      |     2    |
+|DOS              |  0x28 |   1  |   7      |     7    |
+|WAV              |  0x29 |   3  |  16      |    16    |
+|1Link            |  0x2A |   1  |   4      |     4    |
++-----------------+-------+------+----------+----------+
+
+From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
