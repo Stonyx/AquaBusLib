@@ -234,3 +234,24 @@ It appears that EB8 uses RMS method to report total current. The formula used by
 AmpCurrent = ((sqrt(divsi3(RawCurrent,Frequency))*0x6ce8)/2^16)/10
 ```
 
+#### Calibrating EB8 current sensor
+
+EB8 supports calibration of its current sensor. The way this works is with nothing plugged into EB8 to draw any current, a user can issue a telnet command
+```
+eb8zero
+```
+This would then send a message to EB8 module to adjust the delta it uses to calculate rawCurrent. The format of the eb8zero request is as follows:
+```
+struct AB_EB8ZERO_REQUEST_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte Reserved[2];
+}
+```
+Where:
+FunctionCode - 0x20
+RequestType - 0x03
+Reserved - Not used, uninitialized
+
+EB8 response to this request follows the standard AB_EB8_RESPONSE_PACKET format.
