@@ -50,7 +50,7 @@ This is the list of known Function Codes supported by Apex:
 
 As Apex uses Modbus for device communication, the head unit always acts as the Modbus master. All attached devices are configured as Modbus slaves. Each device is given a unique address. The head unit always initiates a communication. Slave devices respond to commands from the head unit.
 
-### Introducing a new device to Apex
+### Introducing new device to Apex
 
 Apex head unit sends a probe request to all devices connected to the network. If a new device is attached, it response to the probe request, which initiates a series of requests that eventually result in the device being attached to Apex.
 
@@ -154,3 +154,6 @@ This is the SET stage of the new device probe. In this stage, Apex agrees to ins
 
 #### Probe Request Stage 5
 This is the Attach stage of the probe cycle. Apex sends this request only to previously set devices. The format of the request and the expected response repeat previous probe stages. The Address field is set to the same address as before. It is also sent to modbus broadcast address (0x00). This request tells the device that it's now attached to Apex and should expect regular communication from this point on. The response tells Apex that the device acknowledges attachment and is ready for communication.
+
+### Reconnecting existing module to Apex
+Once the device is initialized with Apex, meaning that it has gone through probe request stages 1-3, it can then be reattached to Apex with a single "Attach" request. This request assumes that the device already knows its AB address and the Apex serial number. If this is the case, the device first must respond to the initial Probe Stage 1 request, but instead of choosing the next available AB address from the request packet, it responds with its own AB address previously assigned and Apex's serial number. Upon receiving the response, Apex verifies that it already has a record of the device, and sends Probe Request Stage 5 "Attach" immediately. The request is still sent to modbus broadcast address (0x00). This request tells the device that it's now attached to Apex and should expect regular communication from this point on. The response tells Apex that the device acknowledges attachment and is ready for communication.
