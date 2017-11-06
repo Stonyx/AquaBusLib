@@ -198,10 +198,10 @@ struct AB_EB8_REQUEST_PACKET
 }
 ```
 In this packet:
-FunctionCode - 0x20
-RequestType - 0x01
-OutletStateBitmap - Bitmap of outlets that should be ON
-unknown - The purpose of this is not immediately clear, in some instances it seems to repeat OutletStateBitmap.
+FunctionCode - 0x20  
+RequestType - 0x01  
+OutletStateBitmap - Bitmap of outlets that should be ON  
+unknown - The purpose of this is not immediately clear, in some instances it seems to repeat OutletStateBitmap.  
 
 The OutletStateBitmap byte tells EB8 which outlets should be in ON or OFF position. For example:
 ```
@@ -250,8 +250,8 @@ struct AB_EB8ZERO_REQUEST_PACKET
 }
 ```
 Where:
-FunctionCode - 0x20
-RequestType - 0x03
-Reserved - Not used, uninitialized
+FunctionCode - 0x20  
+RequestType - 0x03  
+Reserved - Not used, uninitialized  
 
 EB8 response to this request follows the standard AB_EB8_RESPONSE_PACKET format.
