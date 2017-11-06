@@ -226,7 +226,7 @@ FunctionCode and RequestType fields repeat what was sent in the request.
 OutletStateCurrent returns the bitmap of outlets in their current state.  
 unknown - the purpose of this is not currently clear  
 legacyCurrent - reports current reading in legacy format  
-frequency - Frequency constant to calculate Amperage  
+frequency - Frequency constant to calculate Amperage. EB8 reports this as 40 (decimal) 
 rawCurrent - reports current reading in full format  
 
 It appears that EB8 uses RMS method to report total current. The formula used by apex to arrive at the final amperage number is:
