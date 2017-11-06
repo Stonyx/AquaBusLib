@@ -95,13 +95,13 @@ Here's an example of a complete initial probe request:
 00 01 01 03 34 12 00 00 00 6F 73
 ```
 Where:
-  0x00 - Modbus broadcast address
-  0x01 - Device Probe Request
-  0x01 - Initial Stage Probe Request
-  0x03 - Next available Modbus (AquaBus) address
-  0x1234 - Apex Serial Number
-  0x000000 - unknown. Appears to be reserved and unused
-  0x736F - Modbus CRC16 checksum
+  0x00 - Modbus broadcast address  
+  0x01 - Device Probe Request  
+  0x01 - Initial Stage Probe Request  
+  0x03 - Next available Modbus (AquaBus) address  
+  0x1234 - Apex Serial Number  
+  0x000000 - unknown. Appears to be reserved and unused  
+  0x736F - Modbus CRC16 checksum  
   
 Since this is a new device, it takes Address and ApexSerialNumber values from the request, verifies internally that it has no record of previous connections to this Apex head unit, and send the response back. The structure of the response is as follows:
 ```
