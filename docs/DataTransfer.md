@@ -229,7 +229,7 @@ legacyCurrent - reports current reading in legacy format
 frequency - Frequency constant to calculate Amperage  
 rawCurrent - reports current reading in full format  
 
-It appears that EB8 uses RMS method to report total frequency. The formula used by apex to arrive at the final amperage number is:
+It appears that EB8 uses RMS method to report total current. The formula used by apex to arrive at the final amperage number is:
 ```
 AmpCurrent = ((sqrt(divsi3(RawCurrent,Frequency))*0x6ce8)/2^16)/10
 ```
