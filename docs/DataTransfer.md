@@ -45,6 +45,7 @@ This is the list of known Function Codes supported by Apex:
 |               | already connected devices                                                          |
 +---------------+------------------------------------------------------------------------------------+
 ```
+Table 1: Known Apex Function Codes
 
 ## Apex Device Communication
 
@@ -84,6 +85,7 @@ Apex sends this request to the broadcast address 0x00 for all devices to pick up
 |               | This is also the request sent to known devices on reattach.                        |
 +---------------+------------------------------------------------------------------------------------+
 ```
+Table 2: Probe Request Stages
 
 #### Probe Request Stage 1
 In the first probe stage, Apex sends two important pieces of information: Next available AquaBus address and Apex's serial number. This way the device being probed can check if it has already been previously attached to this Apex and on what address. Or if this is a new device, it can take the next available AquaBus address on registration.
@@ -142,6 +144,7 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 |1Link            |  0x2A |   1  |   4      |     4    |
 +-----------------+-------+------+----------+----------+
 ```
+Table 3: List of Apex Modules
 
 From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
 
@@ -157,3 +160,72 @@ This is the Attach stage of the probe cycle. Apex sends this request only to pre
 
 ### Reconnecting existing module to Apex
 Once the device is initialized with Apex, meaning that it has gone through probe request stages 1-3, it can then be reattached to Apex with a single "Attach" request. This request assumes that the device already knows its AB address and the Apex serial number. If this is the case, the device first must respond to the initial Probe Stage 1 request, but instead of choosing the next available AB address from the request packet, it responds with its own AB address previously assigned and Apex's serial number. Upon receiving the response, Apex verifies that it already has a record of the device, and sends Probe Request Stage 5 "Attach" immediately. The request is still sent to modbus broadcast address (0x00). This request tells the device that it's now attached to Apex and should expect regular communication from this point on. The response tells Apex that the device acknowledges attachment and is ready for communication.
+
+## Device Specific Apex Communication
+
+This section covers communication protocols and considerations specific to particular Apex modules. For the complete list of Apex modules refer to Table 3.
+
+### Energy Bar - 8 outlets (EB8)
+
+For the purpose of this discussion, we will only consider two features of this device: 
+- 8 controllable outlets
+- Current sensing combined across all outlets
+
+Once this module is connected to Apex and completes the initial probe sequence. It is ready to receive EB8 specific requests from Apex. EB8 supports two types of requests:
+- Set outlets and get current reading
+- Calibrate current sensor
+
+```
++---------------+------------------------------------------------------------------------------------+
+| Request Type  | Description                                                                        |
++---------------+------------------------------------------------------------------------------------+
+| 0x01          | Set EB8 outlets states and get current reading                                     |
++---------------+------------------------------------------------------------------------------------+
+| 0x03          | Calibrate (zero out) EB8 current sensor                                            |
++---------------+------------------------------------------------------------------------------------+
+```
+Table 4: Available EB8 Request Types
+
+#### Setting outlets and getting current reading
+EB8 and most other Apex modules use the same function code to communicate with connected modules. The format of EB8 request is as follows:
+```
+struct AB_EB8_REQUEST_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte OutletStateBitmap;
+  byte unknown;
+}
+```
+In this packet:
+FunctionCode - 0x20
+RequestType - 0x01
+OutletStateBitmap - Bitmap of outlets that should be ON
+unknown - The purpose of this is not immediately clear, in some instances it seems to repeat OutletStateBitmap.
+
+The OutletStateBitmap byte tells EB8 which outlets should be in ON or OFF position. For example:
+```
+01000111
+```
+Sets outlets 1,2,3 and 7 to ON and outlets 4,5,6 and 8 to OFF position.
+
+EB8 module responds to this request as follows:
+```
+struct AB_EB8_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte OutletStateCurrent;
+  byte unknown;
+  unsigned short legacyCurrent;
+  unsigned short frequency;
+  unsigned long rawCurrent;
+}
+```
+FunctionCode and RequestType fields repeat what was sent in the request.  
+OutletStateCurrent returns the bitmap of outlets in their current state.  
+unknown - the purpose of this is not currently clear  
+legacyCurrent - reports current reading in legacy format  
+frequency - Frequency constant to calculate Amperage  
+rawCurrent - reports current reading in full format  
+
