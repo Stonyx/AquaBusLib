@@ -3,4 +3,4 @@
 ### Contents
 
 - [Neptune Apex Physical Interface](ApexPhysicalInterface.md)
-- [Data Structures](structures.html)
+- [Neptune Apex Data Transfer](DataTransfer.md)
