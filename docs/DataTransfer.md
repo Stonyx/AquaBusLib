@@ -29,21 +29,16 @@ Stop bits: 1
 
 This is the list of known Function Codes supported by Apex:
 
-+---------------+------------------------------------------------------------------------------------+
+
 | Function Code | Description                                                                        |
-+---------------+------------------------------------------------------------------------------------+
+|---------------|------------------------------------------------------------------------------------|
 | 0x01          | Device Probe Request. Used to attach new and existing devices to Apex              |
-+---------------+------------------------------------------------------------------------------------+
 | 0x07          | Device firmware update Request. Used by Apex to push firmware updates to           |
 |               | connected devices                                                                  |
-+---------------+------------------------------------------------------------------------------------+
 | 0x08          | Device EEPROM Request. Used by Apex to set and get EEPROM of attached device       |
-+---------------+------------------------------------------------------------------------------------+
 | 0x11          | Apex Display Request. Used to communicate with Apex Display                        |
-+---------------+------------------------------------------------------------------------------------+
 | 0x20          | Device Communication Request. Apex uses this function code to send commands to     |
 |               | already connected devices                                                          |
-+---------------+------------------------------------------------------------------------------------+
 
 Table 1: Known Apex Function Codes
 
