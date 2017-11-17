@@ -65,11 +65,8 @@ Apex sends this request to the broadcast address 0x00 for all devices to pick up
 |---------------|------------------------------------------------------------------------------------|
 | 0x01          | Initial stage of probe request. Apex sends this to broadcast looking for newly attached devices | 
 | 0x02          | Second state of probe request. Apex sends this if the response from initial stage came from device not previously registered with Apex                               
-| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in    
-                final configuration stage                                                          
-| 0x05          | Final Stage of probe request. Also called the Attach stage. This is the request    |
-                sent to new devices telling them that they are now attached and ready to go.       
-                This is also the request sent to known devices on reattach.                        
+| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in final configuration stage 
+| 0x05          | Final Stage of probe request. Also called the Attach stage. This is the request sent to new devices telling them that they are now attached and ready to go. This is also the request sent to known devices on reattach.                        
 
 Table 2: Probe Request Stages
 
@@ -106,10 +103,9 @@ struct AB_PROBE_RESPONSE_PACKET
 In the response, the device keeps the original Function Code and stage Probe Stage provided in the request. It also claims the available AB address in ABAddress field and acqnowledges Apex Serial nuber received. In addition, it also provides its hardware ID, hardware revision number and software (firmware) revision number. Apex uses this information to validate that the device can be supported by the version of Apex that it is trying to attach to. 
 
 As of Apex firmware update 4.52_5A17, the following list of devices is known:
-```
-+-----------------+-------+------+----------+----------+
+
 |Module           | HW_ID |HW_Rev|SW_Rev_Min|SW_Rev_Max|
-+-----------------+-------+------+----------+----------+
+|-----------------|-------|------|----------|----------|
 |Display          |  0x1  |   1  |  10      |    11    |
 |PM1              |  0x11 |   1  |   4      |     7    |
 |PM2              |  0x12 |   1  |   2      |     3    |
@@ -129,7 +125,7 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 |WAV              |  0x29 |   3  |  16      |    16    |
 |1Link            |  0x2A |   1  |   4      |     4    |
 +-----------------+-------+------+----------+----------+
-```
+
 Table 3: List of Apex Modules
 
 From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
