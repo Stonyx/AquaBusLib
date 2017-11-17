@@ -60,22 +60,19 @@ struct AB_PROBE_REQUEST_PACKET
 ```
 
 Apex sends this request to the broadcast address 0x00 for all devices to pick up. FunctionCode is 0x01 for all Probe stages. Here's the list of probe stages:
-```
+
 | Probe Stage   | Description                                                                        |
 |---------------|------------------------------------------------------------------------------------|
 | 0x01          | Initial stage of probe request. Apex sends this to broadcast looking for newly attached devices | 
 +---------------+------------------------------------------------------------------------------------+
 | 0x02          | Second state of probe request. Apex sends this if the response from initial stage  
                   came from device not previously registered with Apex                               
-+---------------+------------------------------------------------------------------------------------+
-| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in    |
-|               | final configuration stage                                                          |
-+---------------+------------------------------------------------------------------------------------+
+| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in    
+                final configuration stage                                                          
 | 0x05          | Final Stage of probe request. Also called the Attach stage. This is the request    |
-|               | sent to new devices telling them that they are now attached and ready to go.       |
-|               | This is also the request sent to known devices on reattach.                        |
-+---------------+------------------------------------------------------------------------------------+
-```
+                sent to new devices telling them that they are now attached and ready to go.       
+                This is also the request sent to known devices on reattach.                        
+
 Table 2: Probe Request Stages
 
 #### Probe Request Stage 1
