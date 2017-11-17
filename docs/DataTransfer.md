@@ -124,7 +124,6 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 |DOS              |  0x28 |   1  |   7      |     7    |
 |WAV              |  0x29 |   3  |  16      |    16    |
 |1Link            |  0x2A |   1  |   4      |     4    |
-+-----------------+-------+------+----------+----------+
 
 Table 3: List of Apex Modules
 
@@ -157,15 +156,11 @@ Once this module is connected to Apex and completes the initial probe sequence. 
 - Set outlets and get current reading
 - Calibrate current sensor
 
-```
-+---------------+------------------------------------------------------------------------------------+
 | Request Type  | Description                                                                        |
-+---------------+------------------------------------------------------------------------------------+
+|---------------|------------------------------------------------------------------------------------|
 | 0x01          | Set EB8 outlets states and get current reading                                     |
-+---------------+------------------------------------------------------------------------------------+
 | 0x03          | Calibrate (zero out) EB8 current sensor                                            |
-+---------------+------------------------------------------------------------------------------------+
-```
+
 Table 4: Available EB8 Request Types
 
 #### Setting outlets and getting current reading
