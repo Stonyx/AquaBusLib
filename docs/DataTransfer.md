@@ -28,7 +28,7 @@ Stop bits: 1
 ### Known Apex Function Codes
 
 This is the list of known Function Codes supported by Apex:
-```
+
 +---------------+------------------------------------------------------------------------------------+
 | Function Code | Description                                                                        |
 +---------------+------------------------------------------------------------------------------------+
@@ -44,7 +44,7 @@ This is the list of known Function Codes supported by Apex:
 | 0x20          | Device Communication Request. Apex uses this function code to send commands to     |
 |               | already connected devices                                                          |
 +---------------+------------------------------------------------------------------------------------+
-```
+
 Table 1: Known Apex Function Codes
 
 ## Apex Device Communication
