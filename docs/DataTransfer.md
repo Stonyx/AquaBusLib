@@ -28,23 +28,16 @@ Stop bits: 1
 ### Known Apex Function Codes
 
 This is the list of known Function Codes supported by Apex:
-```
-+---------------+------------------------------------------------------------------------------------+
+
+
 | Function Code | Description                                                                        |
-+---------------+------------------------------------------------------------------------------------+
+|---------------|------------------------------------------------------------------------------------|
 | 0x01          | Device Probe Request. Used to attach new and existing devices to Apex              |
-+---------------+------------------------------------------------------------------------------------+
-| 0x07          | Device firmware update Request. Used by Apex to push firmware updates to           |
-|               | connected devices                                                                  |
-+---------------+------------------------------------------------------------------------------------+
+| 0x07          | Device firmware update Request. Used by Apex to push firmware updates to  connected devices  |
 | 0x08          | Device EEPROM Request. Used by Apex to set and get EEPROM of attached device       |
-+---------------+------------------------------------------------------------------------------------+
 | 0x11          | Apex Display Request. Used to communicate with Apex Display                        |
-+---------------+------------------------------------------------------------------------------------+
-| 0x20          | Device Communication Request. Apex uses this function code to send commands to     |
-|               | already connected devices                                                          |
-+---------------+------------------------------------------------------------------------------------+
-```
+| 0x20          | Device Communication Request. Apex uses this function code to send commands to  already connected devices |
+
 Table 1: Known Apex Function Codes
 
 ## Apex Device Communication
@@ -67,24 +60,14 @@ struct AB_PROBE_REQUEST_PACKET
 ```
 
 Apex sends this request to the broadcast address 0x00 for all devices to pick up. FunctionCode is 0x01 for all Probe stages. Here's the list of probe stages:
-```
-+---------------+------------------------------------------------------------------------------------+
+
 | Probe Stage   | Description                                                                        |
-+---------------+------------------------------------------------------------------------------------+
-| 0x01          | Initial stage of probe request. Apex sends this to broadcast looking for newly     |
-|               | attached devices                                                                   |
-+---------------+------------------------------------------------------------------------------------+
-| 0x02          | Second state of probe request. Apex sends this if the response from initial stage  |
-|               | came from device not previously registered with Apex                               |
-+---------------+------------------------------------------------------------------------------------+
-| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in    |
-|               | final configuration stage                                                          |
-+---------------+------------------------------------------------------------------------------------+
-| 0x05          | Final Stage of probe request. Also called the Attach stage. This is the request    |
-|               | sent to new devices telling them that they are now attached and ready to go.       |
-|               | This is also the request sent to known devices on reattach.                        |
-+---------------+------------------------------------------------------------------------------------+
-```
+|---------------|------------------------------------------------------------------------------------|
+| 0x01          | Initial stage of probe request. Apex sends this to broadcast looking for newly attached devices | 
+| 0x02          | Second state of probe request. Apex sends this if the response from initial stage came from device not previously registered with Apex                               
+| 0x03          | Third stage of probe request. Apex agreed to install the new device and is in final configuration stage 
+| 0x05          | Final Stage of probe request. Also called the Attach stage. This is the request sent to new devices telling them that they are now attached and ready to go. This is also the request sent to known devices on reattach.                        
+
 Table 2: Probe Request Stages
 
 #### Probe Request Stage 1
@@ -120,10 +103,9 @@ struct AB_PROBE_RESPONSE_PACKET
 In the response, the device keeps the original Function Code and stage Probe Stage provided in the request. It also claims the available AB address in ABAddress field and acqnowledges Apex Serial nuber received. In addition, it also provides its hardware ID, hardware revision number and software (firmware) revision number. Apex uses this information to validate that the device can be supported by the version of Apex that it is trying to attach to. 
 
 As of Apex firmware update 4.52_5A17, the following list of devices is known:
-```
-+-----------------+-------+------+----------+----------+
+
 |Module           | HW_ID |HW_Rev|SW_Rev_Min|SW_Rev_Max|
-+-----------------+-------+------+----------+----------+
+|-----------------|-------|------|----------|----------|
 |Display          |  0x1  |   1  |  10      |    11    |
 |PM1              |  0x11 |   1  |   4      |     7    |
 |PM2              |  0x12 |   1  |   2      |     3    |
@@ -142,8 +124,7 @@ As of Apex firmware update 4.52_5A17, the following list of devices is known:
 |DOS              |  0x28 |   1  |   7      |     7    |
 |WAV              |  0x29 |   3  |  16      |    16    |
 |1Link            |  0x2A |   1  |   4      |     4    |
-+-----------------+-------+------+----------+----------+
-```
+
 Table 3: List of Apex Modules
 
 From this table, Apex checks hwID from the response to match one in the table. This allows Apex to choose how to handle the new device. swRevision from the response must be within SW_Rev_min and SW_Rev_max in the table. Otherwise, Apex will either attempt to update the firmware or refuse attaching the device.
@@ -175,15 +156,11 @@ Once this module is connected to Apex and completes the initial probe sequence. 
 - Set outlets and get current reading
 - Calibrate current sensor
 
-```
-+---------------+------------------------------------------------------------------------------------+
 | Request Type  | Description                                                                        |
-+---------------+------------------------------------------------------------------------------------+
+|---------------|------------------------------------------------------------------------------------|
 | 0x01          | Set EB8 outlets states and get current reading                                     |
-+---------------+------------------------------------------------------------------------------------+
 | 0x03          | Calibrate (zero out) EB8 current sensor                                            |
-+---------------+------------------------------------------------------------------------------------+
-```
+
 Table 4: Available EB8 Request Types
 
 #### Setting outlets and getting current reading
