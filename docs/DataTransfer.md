@@ -100,7 +100,7 @@ struct AB_PROBE_RESPONSE_PACKET
 	byte unknown[3];
 }
 ```
-In the response, the device keeps the original Function Code and stage Probe Stage provided in the request. It also claims the available AB address in ABAddress field and acqnowledges Apex Serial nuber received. In addition, it also provides its hardware ID, hardware revision number and software (firmware) revision number. Apex uses this information to validate that the device can be supported by the version of Apex that it is trying to attach to. 
+In the response, the device keeps the original Function Code and stage Probe Stage provided in the request. It also claims the available AB address in ABAddress field and acknowledges Apex Serial number received. In addition, it also provides its hardware ID, hardware revision number and software (firmware) revision number. Apex uses this information to validate that the device can be supported by the version of Apex that it is trying to attach to. 
 
 As of Apex firmware update 4.52_5A17, the following list of devices is known:
 
@@ -174,7 +174,7 @@ struct AB_EB8_REQUEST_PACKET
   byte unknown;
 }
 ```
-In this packet:
+In this packet:  
 FunctionCode - 0x20  
 RequestType - 0x01  
 OutletStateBitmap - Bitmap of outlets that should be ON  
@@ -226,11 +226,230 @@ struct AB_EB8ZERO_REQUEST_PACKET
   byte Reserved[2];
 }
 ```
-Where:
+Where:  
 FunctionCode - 0x20  
 RequestType - 0x03  
 Reserved - Not used, uninitialized  
 
 EB8 response to this request follows the standard AB_EB8_RESPONSE_PACKET format.
 
-lkklkj
+### Probe Module 2 (PM2) - Salinity Module
+
+The PM2 module serves three major purposes:
+- Salinity monitoring (done by conductivity probe)
+- Temperature compensation for salinity monitoring (done by temperature probe)
+- Six additional switches for various sensors
+
+In this section, we will cover AquaBus PM2 protocol that support these functionalities. Once the module is connected to Apex and completes the initial probe sequence. It is ready to receive PM2 specific requests from Apex. PM2 supports three types of requests:
+- Getting Initial Module Information
+- Module and Probe Calibration
+- Polling Module for Probe/Switch Status Data
+
+The module also supports four types of salinity probe ranges
+- Low
+- Medium
+- High
+- Salinity
+
+These ranges are important, because PM2 supports different polling requests for different ranges. Internally, these ranges are defined as following:
+```
+#define PROBE_RANGE_LOW      0
+#define PROBE_RANGE_MEDIUM   1
+#define PROBE_RANGE_HIGH     2
+#define PROBE_RANGE_SALINITY 3
+```
+
+These values will be used throughout the protocol to indicate various range specific configuration options. You can find more information about these ranges in the official Apex PM2 manual.
+
+While the PM2 protocol supports three types of requests as listed above, the data polling request type provides different, range specific requests as follows:
+
+| Request Type  | Description                                                                        |
+|---------------|------------------------------------------------------------------------------------|
+| 0x01          | Retrieve module and probe specific configuration information from PM2 (e.g. Enabled probes, offset and scale values. |
+| 0x02          | Calibrate module using data from probe calibration sequence |
+| 0x03          | Poll module for probe data in PROBE_RANGE_LOW configuration|
+| 0x04          | Poll module for probe data in PROBE_RANGE_MEDIUM configuration|
+| 0x05          | Poll module for probe data in PROBE_RANGE_HIGH or PROBE_RANGE_SALINITY configurations|
+
+Table 5: Available PM2 Request Types
+
+#### Retrieving module and probe specific configuration
+
+PM2 module stores its configuration and calibration information internally in EEPROM. In part, to avoid probe re-calibration on power cycle. Apex needs to have this information so that it can do proper, module specific data conversion for user display purposes. The format of the request is as follows:
+```
+struct AB_PM2_INIT_REQUEST_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+}
+```
+Where:  
+  FunctionCode - 0x20  
+  RequestType - 0x01  
+  
+The module responses with a much larger packet that contains all of the internal module configuration and calibration information. The format of the response is as follows:
+```
+struct AB_PM2_INIT_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short TempProbeOffset;
+  unsigned short Unknown_1;
+  unsigned short Unknown_2;
+  unsigned short ConductivityProbeOffset;
+  unsigned short TempProbeScale;
+  unsigned short Unknown_3;
+  unsigned short Unknown_4;
+  unsigned short ConductivityProbeScale;
+}
+```
+Where:  
+FunctionCode - 0x20  
+RequestType - 0x01  
+ProbeConfig - Bitfield indicates the operating range and enabled probes.  
+Available PM2 probes:  
+```
+  #define PROBE_TYPE_None 0  
+  #define PROBE_TYPE_Temp 1  
+  #define PROBE_TYPE_Cond 0x40  
+```
+For example, PM2 module with enabled conductivity probe operating in SALINITY range would have ProbeConfig - PROBE_TYPE_Cond | (PROBE_RANGE_SALINITY < 1) or ProbeConfig = 0x46. A module with enabled conductivity and temperature probes operating in SALINITY range would have ProbeConfig = PROBE_TYPE_Cond | PROBE_TYPE_Temp | (PROBE_RANGE_SALINITY < 1) or ProbeConfig = 0x47 and so on.  
+  
+TempProbeOffset - Temperature Probe Offset. As described in the module manual, the value is used to adjust the temperature probe reading. This is a signed 16 bit field. An offset of '-14' is represented as value 0xFFF2.  
+  
+Unknown_1 - Currently unknown. Example seen transmitted by PM2 is 0xFFF9, likely another negative value -7.  
+  
+Unknown_2 - Currently unknown. Example seen transmitted by PM2 is 0xFFF0, likely another negative value -16.  
+  
+ConductivityProbeOffset - Conductivity Probe Offset. As described in the module manual, the value is used to adjust the conductivity probe reading. The offset of 0x0238 is shown in Apex probe offset configuration option as 568.  
+  
+TempProbeScale - Temperature Probe Scale. Seems to always be set to 0x1000. The value shows in Apex Web interface under Probe configuration as "Scale: 1.000"  
+  
+Unknown_3 - Currently unknown. Example seen transmitted by PM2 is 0x0B55.  
+  
+Unknown_4 - Currently unknown. Example seen transmitted by PM2 is 0x0E60.  
+  
+ConductivityProbeScale - Conductivity Probe Scale. Example seen transmitted by PM2 is 0x1086. The value shows in Apex Web interface under Probe configuration as "Offset: 1.086"  
+
+#### Calibrating PM2 module
+
+Apex support automated and manual probe calibration via either the display or the web interface. The calibration request is as follows:
+
+```
+struct AB_PM2_CALIBRATE_REQUEST_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short TempProbeOffset;
+  unsigned short Unknown_1;
+  unsigned short Unknown_2;
+  unsigned short ConductivityProbeOffset;
+  unsigned short TempProbeScale;
+  unsigned short Unknown_3;
+  unsigned short Unknown_4;
+  unsigned short ConductivityProbeScale;
+}
+```
+
+Where:  
+FunctionCode - 0x20  
+RequestType - 0x02  
+ProbeConfig - Bitfield indicates the operating range and enabled probes.   
+Available PM2 probes:  
+```
+  #define PROBE_TYPE_None 0  
+  #define PROBE_TYPE_Temp 1  
+  #define PROBE_TYPE_Cond 0x40  
+```
+For example, PM2 module with enabled conductivity probe operating in SALINITY range would have ProbeConfig - PROBE_TYPE_Cond | (PROBE_RANGE_SALINITY < 1) or ProbeConfig = 0x46. A module with enabled conductivity and temperature probes operating in SALINITY range would have ProbeConfig = PROBE_TYPE_Cond | PROBE_TYPE_Temp | (PROBE_RANGE_SALINITY < 1) or ProbeConfig = 0x47 and so on.  
+  
+TempProbeOffset - Temperature Probe Offset. As described in the module manual, the value is used to adjust the temperature probe reading. This is a signed 16 bit field. An offset of '-14' is represented as value 0xFFF2.  
+  
+Unknown_1 - Currently unknown. Example seen transmitted by PM2 is 0xFFF9, likely another negative value -7.  
+  
+Unknown_2 - Currently unknown. Example seen transmitted by PM2 is 0xFFF0, likely another negative value -16.  
+  
+ConductivityProbeOffset - Conductivity Probe Offset. As described in the module manual, the value is used to adjust the conductivity probe reading. The offset of 0x0238 is shown in Apex probe offset configuration option as 568.  
+  
+TempProbeScale - Temperature Probe Scale. Seems to always be set to 0x1000. The value shows in Apex Web interface under Probe configuration as "Scale: 1.000"  
+  
+Unknown_3 - Currently unknown. Example seen transmitted by PM2 is 0x0B55.  
+  
+Unknown_4 - Currently unknown. Example seen transmitted by PM2 is 0x0E60.  
+  
+ConductivityProbeScale - Conductivity Probe Scale. Example seen transmitted by PM2 is 0x1086. The value shows in Apex Web interface under Probe configuration as "Offset: 1.086"  
+
+The response structure is identical to the AB_PM2_INIT_RESPONSE_PACKET:
+
+```
+struct AB_PM2_CALIBRATE_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short TempProbeOffset;
+  unsigned short Unknown_1;
+  unsigned short Unknown_2;
+  unsigned short ConductivityProbeOffset;
+  unsigned short TempProbeScale;
+  unsigned short Unknown_3;
+  unsigned short Unknown_4;
+  unsigned short ConductivityProbeScale;
+}
+```
+The content is similar to that of AB_PM2_INIT_RESPONSE_PACKET except RequestType, which is set to 2.
+
+#### Polling for probe and switch data
+
+The request structure is identical for all four types of probe ranges:
+```
+struct AB_PM2_DATA_REQUEST_PACKET
+{
+	byte FunctionCode;
+	byte RequestType;
+}
+```
+Where:  
+  FunctionCode - 0x20  
+  RequestType - 0x3 if operating in PROBE_RANGE_LOW mode  
+                0x4 if operating in PROBE_RANGE_MEDIUM mode  
+                0x5 if operating in PROBE_RANGE_HIGH or PROBE_RANGE_SALINITY mode  
+
+The module response with the following:
+```
+struct AB_PM2_DATA_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short CondReading;
+  unsigned short TempReading;
+  unsigned short Unknown;
+  unsigned short SwitchState;
+}
+```
+Where:  
+FunctionCode - 0x20  
+RequestType - 0x3, 0x4 or 0x5  
+ProbeConfig - Bitfield indicates the operating range and enabled probes.  
+Available PM2 probes:  
+```
+#define PROBE_TYPE_None 0  
+#define PROBE_TYPE_Temp 1  
+#define PROBE_TYPE_Cond 0x40  
+```
+For example, PM2 module with enabled conductivity probe operating in SALINITY range would have ProbeConfig - PROBE_TYPE_Cond | (PROBE_RANGE_SALINITY < 1) or ProbeConfig = 0x46. A module with enabled conductivity and temperature probes operating in SALINITY range would have ProbeConfig = PROBE_TYPE_Cond | PROBE_TYPE_Temp | (PROBE_RANGE_SALINITY < 1) or ProbeConfig = 0x47 and so on.
+  
+CondReading - Conductivity reading. Example seen transmitted by PM2 is 0x348A. This corresponds to salinity reading of "48"  
+  
+TempReading - Temperature reading. Example seen transmitted by PM2 is 0x2244. This corresponds to temperature reading of "74.7f"  
+  
+Unknown - Unknown and appears to not be used  
+  
+SwitchState - bitfield of current state of the 6 switches. For example, 0x36 or binary 00110110 would indicate that switches 2,3,5 and 6 are ON and switches 1 and 4 are OFF.  
+
+#### Emulating PM2 module for Switches functionality only
+
+It is possible to emulate the PM2 module without any probes for the purpose of adding the 6 sensor switches to Apex. At the minimum you would have to handle AB_PM2_INIT_REQUEST_PACKET and AB_PM2_DATA_REQUEST_PACKET. In the AB_PM2_INIT_REQUEST_PACKET handler, the response should set ProbeCofig to zero to indicate that no probes are enabled and operating in Low Range mode. All other field can be set to zero. In the AB_PM2_DATA_REQUEST_PACKET handler, the response should repeat the value of ProbeConfig field and set the SwitchState field appropriately. All other fields can be set to zero.
