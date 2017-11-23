@@ -15,6 +15,7 @@
 
 // Include header files
 #include <arduino.h>
+#include "common.h"
 
 // The AquaBusDevice class
 class AquaBusDev
