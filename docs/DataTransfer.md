@@ -1,16 +1,39 @@
+## Table of Contents
+  
+- [Neptune Apex Data Transfer](#neptune-apex-data-transfer)
+  * [Apex Modbus configuration](#apex-modbus-configuration)
+  * [Apex Modbus Frame structure](#apex-modbus-frame-structure)
+  * [Known Apex Function Codes](#known-apex-function-codes)
+- [Apex Device Communication](#apex-device-communication)
+  * [Introducing new device to Apex](#introducing-new-device-to-apex)
+    + [Probe Request Stage 1](#probe-request-stage-1)
+    + [Probe Request Stage 2](#probe-request-stage-2)
+    + [Probe Request Stage 3](#probe-request-stage-3)
+    + [Probe Request Stage 5](#probe-request-stage-5)
+  * [Reconnecting existing module to Apex](#reconnecting-existing-module-to-apex)
+- [Device Specific Apex Communication](#device-specific-apex-communication)
+  * [Energy Bar - 8 outlets (EB8)](#energy-bar---8-outlets--eb8-)
+    + [Setting outlets and getting current reading](#setting-outlets-and-getting-current-reading)
+    + [Calibrating EB8 current sensor](#calibrating-eb8-current-sensor)
+  * [Probe Module 2 (PM2) - Salinity Module](#probe-module-2--pm2----salinity-module)
+    + [Retrieving module and probe specific configuration](#retrieving-module-and-probe-specific-configuration)
+    + [Calibrating PM2 module](#calibrating-pm2-module)
+    + [Polling for probe and switch data](#polling-for-probe-and-switch-data)
+    + [Emulating PM2 module for Switches functionality only](#emulating-pm2-module-for-switches-functionality-only)
+		
 ## Neptune Apex Data Transfer
 
 Although, Apex uses CAN transceiver at the physical layer, it does not implement CAN for data transfers. Instead, Apex uses [Modbus
 RTU](https://en.wikipedia.org/wiki/Modbus) to communicate with addon modules and for arbitration. Specifically, it relies heavily
 on [freemodbus](https://www.freemodbus.org) library for Modbus data transfer implementation.
 
-### Apex Modbus configuration:
+### Apex Modbus configuration
 Baudrate: 19200  
 Data Bits: 8  
 Parity: Even  
 Stop bits: 1  
 
-### Apex Modbus Frame structure:
+### Apex Modbus Frame structure
 ```
 <------------------------ MODBUS SERIAL LINE PDU (1) ------------------->
              <----------- MODBUS PDU (1') ---------------->
