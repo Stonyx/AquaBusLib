@@ -476,3 +476,206 @@ SwitchState - bitfield of current state of the 6 switches. For example, 0x36 or 
 #### Emulating PM2 module for Switches functionality only
 
 It is possible to emulate the PM2 module without any probes for the purpose of adding the 6 sensor switches to Apex. At the minimum you would have to handle AB_PM2_INIT_REQUEST_PACKET and AB_PM2_DATA_REQUEST_PACKET. In the AB_PM2_INIT_REQUEST_PACKET handler, the response should set ProbeCofig to zero to indicate that no probes are enabled and operating in Low Range mode. All other field can be set to zero. In the AB_PM2_DATA_REQUEST_PACKET handler, the response should repeat the value of ProbeConfig field and set the SwitchState field appropriately. All other fields can be set to zero.
+
+### Probe Module 1 (PM1) - pH/ORP Module
+
+The PM1 module serves three major purposes:
+- Provides additional pH/ORP monitoring
+- Temperature compensation
+- Six additional switches for various sensors
+
+In this section, we will cover AquaBus PM1 protocol that support these functionalities. Once the module is connected to Apex and completes the initial probe sequence. It is ready to receive PM1 specific requests from Apex. PM1 supports three types of requests:
+- Getting Initial Module Information
+- Module and Probe Calibration
+- Polling Module for Probe/Switch Status Data
+
+| Request Type  | Description                                                                        |
+|---------------|------------------------------------------------------------------------------------|
+| 0x01          | Retrieve module and probe specific configuration information from PM1 (e.g. Enabled probes, offset and scale values. |
+| 0x02          | Calibrate module using data from probe calibration sequence |
+| 0x03          | Poll module for probe data |
+
+Table 6: Available PM1 Request Types
+
+#### Retrieving module and probe specific configuration
+
+PM1 module stores its configuration and calibration information internally in EEPROM. In part, to avoid probe re-calibration on power cycle. Apex needs to have this information so that it can do proper, module specific data conversion for user display purposes. The format of the request is as follows:
+```
+struct AB_PM1_INIT_REQUEST_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+}
+```
+Where:  
+  FunctionCode - 0x20  
+  RequestType - 0x01  
+  
+The module responses with a much larger packet that contains all of the internal module configuration and calibration information. The format of the response is as follows:
+```
+struct AB_PM1_INIT_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short pH_ProbeOffset;
+  unsigned short TempProbeOffset;
+  unsigned short ORPProbeOffset;
+  unsigned short pH_ProbeScale;
+  unsigned short TempProbeScale;
+  unsigned short ORPProbeScale;
+  unsigned short Unknown_1;
+  unsigned short Unknown_2;
+}
+```
+Where:  
+FunctionCode - 0x20  
+RequestType - 0x01  
+ProbeConfig - Bitfield indicates enabled probes.  
+Available PM1 probes:  
+```
+  #define PROBE_TYPE_None 0  
+  #define PROBE_TYPE_Temp 1  
+  #define PROBE_TYPE_pH   2
+  #define PROBE_TYPE_ORP  4 
+```
+For example, PM1 module with enabled pH probe and Temperature probe would have ProbeConfig - PROBE_TYPE_pH |  PROBE_TYPE_Temp or ProbeConfig = 0x3. A module with enabled ORP and temperature probes operating would have ProbeConfig = PROBE_TYPE_ORP | PROBE_TYPE_Temp | or ProbeConfig = 0x5 and so on.  
+
+pH_ProbeOffset - pH Probe Offset. The value is used to adjust the pH probe reading. This is a signed 16 bit field.  
+
+TempProbeOffset - Temperature Probe Offset. As described in the module manual, the value is used to adjust the temperature probe reading. This is a signed 16 bit field. An offset of '-14' is represented as value 0xFFF2.  
+
+ORPProbeOffset - ORP Probe Offset. The value is used to adjust the ORP probe reading. This is a signed 16 bit field.  
+
+pH_ProbeScale - pH Probe Scale.  
+
+TempProbeScale - Temperature Probe Scale. Seems to always be set to 0x1000. The value shows in Apex Web interface under Probe configuration as "Scale: 1.000"  
+
+ORPProbeScale - ORP Probe Scale.  
+
+Unknown_1 - Currently unknown.  
+  
+Unknown_2 - Currently unknown.  
+
+#### Calibrating PM1 module
+
+Apex support automated and manual probe calibration via either the display or the web interface. The calibration request is as follows:
+
+```
+struct AB_PM1_CALIBRATE_REQUEST_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short pH_ProbeOffset;
+  unsigned short TempProbeOffset;
+  unsigned short ORPProbeOffset;
+  unsigned short pH_ProbeScale;
+  unsigned short TempProbeScale;
+  unsigned short ORPProbeScale;
+  unsigned short Unknown_3;
+  unsigned short Unknown_4;
+}
+```
+
+Where:  
+FunctionCode - 0x20  
+RequestType - 0x02  
+ProbeConfig - Bitfield indicates enabled probes.   
+Available PM1 probes:  
+```
+  #define PROBE_TYPE_None 0  
+  #define PROBE_TYPE_Temp 1  
+  #define PROBE_TYPE_pH   2
+  #define PROBE_TYPE_ORP  4 
+```
+For example, PM1 module with enabled pH probe and Temperature probe would have ProbeConfig - PROBE_TYPE_pH |  PROBE_TYPE_Temp or ProbeConfig = 0x3. A module with enabled ORP and temperature probes operating would have ProbeConfig = PROBE_TYPE_ORP | PROBE_TYPE_Temp | or ProbeConfig = 0x5 and so on.  
+
+pH_ProbeOffset - pH Probe Offset. The value is used to adjust the pH probe reading. This is a signed 16 bit field.  
+
+TempProbeOffset - Temperature Probe Offset. As described in the module manual, the value is used to adjust the temperature probe reading. This is a signed 16 bit field. An offset of '-14' is represented as value 0xFFF2.  
+
+ORPProbeOffset - ORP Probe Offset. The value is used to adjust the ORP probe reading. This is a signed 16 bit field.  
+
+pH_ProbeScale - pH Probe Scale.  
+
+TempProbeScale - Temperature Probe Scale. Seems to always be set to 0x1000. The value shows in Apex Web interface under Probe configuration as "Scale: 1.000"  
+
+ORPProbeScale - ORP Probe Scale.  
+
+Unknown_1 - Currently unknown.  
+  
+Unknown_2 - Currently unknown.   
+
+The response structure is identical to the AB_PM1_INIT_RESPONSE_PACKET:
+
+```
+struct AB_PM1_CALIBRATE_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short pH_ProbeOffset;
+  unsigned short TempProbeOffset;
+  unsigned short ORPProbeOffset;
+  unsigned short pH_ProbeScale;
+  unsigned short TempProbeScale;
+  unsigned short ORPProbeScale;
+  unsigned short Unknown_1;
+  unsigned short Unknown_2;
+}
+```
+The content is similar to that of AB_PM1_INIT_RESPONSE_PACKET except RequestType, which is set to 2.
+
+#### Polling for probe and switch data
+
+The request structure is for the data polling request:
+```
+struct AB_PM1_DATA_REQUEST_PACKET
+{
+	byte FunctionCode;
+	byte RequestType;
+}
+```
+Where:  
+  FunctionCode - 0x20  
+  RequestType - 0x3  
+
+The module response with the following:
+```
+struct AB_PM1_DATA_RESPONSE_PACKET
+{
+  byte FunctionCode;
+  byte RequestType;
+  byte ProbeConfig;
+  unsigned short pH_Reading;
+  unsigned short TempReading;
+  unsigned short ORPReading;
+  unsigned short SwitchState;
+}
+```
+Where:  
+FunctionCode - 0x20  
+RequestType - 0x3  
+ProbeConfig - Bitfield indicates enabled probes.  
+Available PM1 probes:  
+```
+#define PROBE_TYPE_None 0  
+#define PROBE_TYPE_Temp 1  
+#define PROBE_TYPE_pH   2
+#define PROBE_TYPE_ORP  4 
+```
+For example, PM1 module with enabled pH probe and Temperature probe would have ProbeConfig - PROBE_TYPE_pH |  PROBE_TYPE_Temp or ProbeConfig = 0x3. A module with enabled ORP and temperature probes operating would have ProbeConfig = PROBE_TYPE_ORP | PROBE_TYPE_Temp | or ProbeConfig = 0x5 and so on.  
+  
+pH_Reading - pH probe reading. Example seen transmitted by PM1 is 0x348A. This corresponds to pH reading of "3.52" with offset of "-16" and scale "0.238"
+  
+TempReading - Temperature probe reading. Example seen transmitted by PM1 is 0x2244. This corresponds to temperature reading of "75.3f" with offset of "-7"
+  
+ORPReading - ORP probe reading. Example seen transmitted by PM1 is 0x4018. This corresponds to ORP reading of "83" with offset of "-16" and scale of "0.b55"  
+  
+SwitchState - bitfield of current state of the 6 switches. For example, 0x36 or binary 00110110 would indicate that switches 2,3,5 and 6 are ON and switches 1 and 4 are OFF.  
+
+#### Emulating PM1 module for Switches functionality only
+
+It is possible to emulate the PM1 module without any probes for the purpose of adding the 6 sensor switches to Apex. At the minimum you would have to handle AB_PM1_INIT_REQUEST_PACKET and AB_PM2_DATA_REQUEST_PACKET. In the AB_PM1_INIT_REQUEST_PACKET handler, the response should set ProbeCofig to zero to indicate that no probes are enabled and operating in Low Range mode. All other field can be set to zero. In the AB_PM1_DATA_REQUEST_PACKET handler, the response should repeat the value of ProbeConfig field and set the SwitchState field appropriately. All other fields can be set to zero.
+
