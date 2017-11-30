@@ -20,6 +20,16 @@
     + [Calibrating PM2 module](#calibrating-pm2-module)
     + [Polling for probe and switch data](#polling-for-probe-and-switch-data)
     + [Emulating PM2 module for Switches functionality only](#emulating-pm2-module-for-switches-functionality-only)
+  * [Probe Module 1 (PM1) - pH/ORP Module](#probe-module-1--pm1----ph-orp-module)
+    + [Retrieving module and probe specific configuration](#retrieving-module-and-probe-specific-configuration-1)
+    + [Calibrating PM1 module](#calibrating-pm1-module)
+    + [Polling for probe and switch data](#polling-for-probe-and-switch-data-1)
+    + [Emulating PM1 module for Switches functionality only](#emulating-pm1-module-for-switches-functionality-only)
+  * [Probe Module 3 (PM3) - Dissolved Oxygen Module](#probe-module-3--pm3----dissolved-oxygen-module)
+    + [Retrieving module and probe specific configuration](#retrieving-module-and-probe-specific-configuration-2)
+    + [Calibrating PM3 module](#calibrating-pm3-module)
+    + [Polling for probe and switch data](#polling-for-probe-and-switch-data-2)
+    + [Emulating PM3 module for Switches functionality only](#emulating-pm3-module-for-switches-functionality-only)
 		
 ## Neptune Apex Data Transfer
 
