@@ -13,7 +13,7 @@ AquaBus Arduino Adapter layout:
 AquaBus Arduino Adapter assembled:
 ![Aquabus Arduino Adapter assembled](pcb.jpg)
 
-![Adapter PCB on OSHPark](https://oshpark.com/shared_projects/xwEmx9A8)
+[Adapter PCB on OSHPark](https://oshpark.com/shared_projects/xwEmx9A8)
 
 Parts list (DigiKey Part #s):
 - Qty 1 MBR0530CT-ND (optional, highly recommended)
