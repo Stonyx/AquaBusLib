@@ -16,6 +16,7 @@
 // Include header files
 #include <arduino.h>
 #include "AquaBusDev.h"
+#include "ACS712.h"
 
 struct AB_EB8_RESPONSE_PACKET
 {
@@ -84,10 +85,16 @@ class EB8 : public AquaBusDev
 
     // Member functions
     bool getOutletState(byte outlet);
+    void SetOutletPins(byte outPins[]);
+    void SetCurSensor(ACS712_type type, uint8_t _pin);
+    void Init();
 
   protected:
     // Member variables
     byte outletStates;
+    byte currentPin;
+    byte outletPins[8];
+    ACS712 sensor;
 
     // Member functions
     void processData(byte deviceABAddr, byte* data, unsigned short length);

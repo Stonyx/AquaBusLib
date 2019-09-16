@@ -13,10 +13,10 @@
 //#define DEBUG
 #ifdef DEBUG
 	#include <SoftwareSerial.h>
-	extern SoftwareSerial Serial2;
-  #define DEBUG_LOG(string) Serial2.print(string)
-  #define DEBUG_LOG_LN(string) Serial2.println(string)
-  #define DEBUG_LOG_HEX(string) Serial2.print(string,HEX)
+	extern SoftwareSerial DebugSerial;
+  #define DEBUG_LOG(string) DebugSerial.print(string)
+  #define DEBUG_LOG_LN(string) DebugSerial.println(string)
+  #define DEBUG_LOG_HEX(string) DebugSerial.print(string,HEX)
 #else
   #define DEBUG_LOG(string)
   #define DEBUG_LOG_LN(string)
@@ -41,9 +41,7 @@ AquaBusDev::AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte
 {
   // Add outselves to the devices array
   AquaBusLib::addDevice(this);
-  abAddress = eeprom_read_byte(0);
-  ApexSerial = eeprom_read_word(1);
-  bAttached = false;
+  probeStage = 0;
 }
 
 // Function called to send data

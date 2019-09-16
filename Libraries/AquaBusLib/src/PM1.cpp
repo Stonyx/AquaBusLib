@@ -13,9 +13,9 @@
 //#define DEBUG
 #ifdef DEBUG
 	#include <SoftwareSerial.h>
-	extern SoftwareSerial Serial2; // 6 is RX, 7 is TX
-  #define DEBUG_LOG(string) Serial2.print(string)
-  #define DEBUG_LOG_LN(string) Serial2.println(string)
+	extern SoftwareSerial DebugSerial; // 6 is RX, 7 is TX
+  #define DEBUG_LOG(string) DebugSerial.print(string)
+  #define DEBUG_LOG_LN(string) DebugSerial.println(string)
 #else
   #define DEBUG_LOG(string)
   #define DEBUG_LOG_LN(string)
