@@ -10,8 +10,8 @@
 // This software is provided "as is" without express or implied warranty.
 
 // Ensure this header file is included only once
-#ifndef PM1_h
-#define PM1_h
+#ifndef PM2_h
+#define PM2_h
 
 // Include header files
 #include <arduino.h>
@@ -23,6 +23,12 @@
 #define PROBE_TYPE_ORP  4
 #define PROBE_TYPE_DO   8
 #define PROBE_TYPE_Cond 0x40	
+
+#define CONDUCTIVITY_PROBE_RANGE_LOW 0
+#define CONDUCTIVITY_PROBE_RANGE_MEDIUM 1
+#define CONDUCTIVITY_PROBE_RANGE_HIGH 2
+#define CONDUCTIVITY_PROBE_RANGE_SALINITY 3
+
 
 struct AB_EEPROM_GET_SET_REQUEST_PACKET
 {
@@ -43,98 +49,98 @@ struct AB_EEPROM_GET_SET_RESPONSE_PACKET
   byte unknown_4;
 } __attribute__((packed));
 
-struct AB_PM1_EEPROM_RESPONSE_FRAME
+struct AB_PM2_EEPROM_RESPONSE_FRAME
 {
 	byte address;
 	AB_EEPROM_GET_SET_RESPONSE_PACKET response;
 	unsigned short crc;
 } __attribute__((packed));
 
-struct AB_PM1_REQUEST_PACKET
+struct AB_PM2_REQUEST_PACKET
 {
 	byte FunctionCode;
 	byte RequestType;
 }__attribute__((packed));
 
-struct AB_PM1_CALIBRATE_REQUEST_PACKET
-{
-	byte FunctionCode;
-	byte RequestType;
-  byte ProbeRangeOriginal;
-  unsigned short pH_DOProbeOffset;
-  unsigned short TempProbeOffset;
-  unsigned short ORPProbeOffset;
-  unsigned short pH_DOProbeScale;
-  unsigned short TempProbeScale;
-  unsigned short ORPProbeScale;
-  unsigned short Unknown_3;
-  unsigned short Unknown_4;
-}__attribute__((packed));
-
-struct AB_PM1_DATA_RESPONSE_PACKET
+struct AB_PM2_CALIBRATE_REQUEST_PACKET
 {
 	byte FunctionCode;
 	byte RequestType;
 	byte ProbeRangeOriginal;
-	unsigned short pH_DOReading;
+	unsigned short TempProbeOffset;
+	unsigned short ConductivityProbeOffset;
+	unsigned short Unknown_1;
+	unsigned short Unknown_2;
+	unsigned short TempProbeScale;
+	unsigned short ConductivityProbeScale;
+	unsigned short Unknown_3;
+	unsigned short Unknown_4;
+}__attribute__((packed));
+
+struct AB_PM2_DATA_RESPONSE_PACKET
+{
+	byte FunctionCode;
+	byte RequestType;
+	byte ProbeRangeOriginal;
+	unsigned short CondReading;
 	unsigned short TempReading;
-	unsigned short ORPReading;
+	unsigned short Unknown;
 	unsigned short SwitchState;
 }__attribute__((packed));
 
-struct AB_PM1_DATA_RESPONSE_FRAME
+struct AB_PM2_DATA_RESPONSE_FRAME
 {
 	byte address;
-	AB_PM1_DATA_RESPONSE_PACKET response;
+	AB_PM2_DATA_RESPONSE_PACKET response;
 	unsigned short crc;
 } __attribute__((packed));
 
-struct AB_PM1_INIT_RESPONSE_PACKET
+struct AB_PM2_INIT_RESPONSE_PACKET
 {
 	byte FunctionCode;
 	byte RequestType;
 	byte ProbeRangeOriginal;
-	unsigned short pH_DOProbeOffset;
 	unsigned short TempProbeOffset;
-	unsigned short ORPProbeOffset;
-	unsigned short pH_DOProbeScale;
+	unsigned short ConductivityProbeOffset;
+	unsigned short Unknown_1;
+	unsigned short Unknown_2;
 	unsigned short TempProbeScale;
-	unsigned short ORPProbeScale;
+	unsigned short ConductivityProbeScale;
 	unsigned short Unknown_3;
 	unsigned short Unknown_4;
 }__attribute__((packed));
 
-struct AB_PM1_INIT_RESPONSE_FRAME
+struct AB_PM2_INIT_RESPONSE_FRAME
 {
 	byte address;
-	AB_PM1_INIT_RESPONSE_PACKET response;
+	AB_PM2_INIT_RESPONSE_PACKET response;
 	unsigned short crc;
 } __attribute__((packed));
 
-struct PM1_STATUS_STRUCT
+struct PM2_STATUS_STRUCT
 {
 	byte ProbeRangeOriginal;
-	unsigned short pH_DOProbeOffset;
 	unsigned short TempProbeOffset;
-	unsigned short ORPProbeOffset;
-	unsigned short pH_DOProbeScale;
+	unsigned short ConductivityProbeOffset;
+	unsigned short Unknown_1;
+	unsigned short Unknown_2;
 	unsigned short TempProbeScale;
-	unsigned short ORPProbeScale;
+	unsigned short ConductivityProbeScale;
 	unsigned short Unknown_3;
 	unsigned short Unknown_4;
 }__attribute__((packed));
 
-// The PM1 class
-class PM1 : public AquaBusDev
+// The PM2 class
+class PM2 : public AquaBusDev
 {
   public:
     // Constructors
-    PM1(unsigned short serial);
-    PM1(unsigned short serial, byte swRevision) :
-        AquaBusDev(APEX_MODULE_PM1, serial, 0x01, swRevision) {}
-    static AB_PM1_DATA_RESPONSE_FRAME PM1DataResponseFrame;
-    static AB_PM1_INIT_RESPONSE_FRAME PM1InitResponseFrame;
-    static AB_PM1_EEPROM_RESPONSE_FRAME EEPROMResponseFrame;
+    PM2(unsigned short serial);
+    PM2(unsigned short serial, byte swRevision) :
+        AquaBusDev(APEX_MODULE_PM2, serial, 0x01, swRevision) {}
+    static AB_PM2_DATA_RESPONSE_FRAME PM2DataResponseFrame;
+    static AB_PM2_INIT_RESPONSE_FRAME PM2InitResponseFrame;
+    static AB_PM2_EEPROM_RESPONSE_FRAME EEPROMResponseFrame;
 
   protected:
     // Member functions
@@ -142,7 +148,7 @@ class PM1 : public AquaBusDev
     void processEEPROMRequest(byte deviceABAddr, byte* data, unsigned short length);
     
     // Member variables
-    PM1_STATUS_STRUCT ModuleStatus;
+    PM2_STATUS_STRUCT ModuleStatus;
 };
 
 #endif

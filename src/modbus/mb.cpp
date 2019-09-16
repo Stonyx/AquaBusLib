@@ -57,6 +57,17 @@
 #define MB_PORT_HAS_CLOSE 0
 #endif
 
+//#define DEBUG
+#ifdef DEBUG
+	#include <SoftwareSerial.h>
+	extern SoftwareSerial DebugSerial; // 6 is RX, 7 is TX
+  #define DEBUG_LOG(string) DebugSerial.print(string)
+  #define DEBUG_LOG_LN(string) DebugSerial.println(string)
+#else
+  #define DEBUG_LOG(string)
+  #define DEBUG_LOG_LN(string)
+#endif 
+
 /* ----------------------- Static variables ---------------------------------*/
 
 static UCHAR    ucMBAddress;
@@ -340,7 +351,9 @@ eMBPoll( void )
     int             i;
     eMBErrorCode    eStatus = MB_ENOERR;
     eMBEventType    eEvent;
-
+		
+		 //DEBUG_LOG_LN("eMBPoll enter");
+		 
     /* Check if the protocol stack is ready. */
     if( eMBState != STATE_ENABLED )
     {
@@ -351,21 +364,31 @@ eMBPoll( void )
      * Otherwise we will handle the event. */
     if( xMBPortEventGet( &eEvent ) == TRUE )
     {
+    		//DEBUG_LOG_LN("eMBPoll G0T EVENT");
         switch ( eEvent )
         {
         case EV_READY:
+        		//DEBUG_LOG_LN("eMBPoll EV_READY");
             break;
 
         case EV_FRAME_RECEIVED:
-            eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
+        		eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
             if( eStatus == MB_ENOERR )
             {
+            	DEBUG_LOG_LN("eMBPoll EV_FRAME_RECEIVED");
+            	DEBUG_LOG("ucRcvAddress = ");
+            	DEBUG_LOG_LN(ucRcvAddress);
                 ( void )xMBPortEventPost( EV_EXECUTE );
             }
             break;
 
         case EV_EXECUTE:
+        		DEBUG_LOG_LN("eMBPoll EV_EXECUTE");
             ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
+            DEBUG_LOG("eMBPoll: ucFunctionCode = ");
+        		DEBUG_LOG_LN(ucFunctionCode);
+        		DEBUG_LOG("eMBPoll: usLength = ");
+        		DEBUG_LOG_LN(usLength);
             eException = MB_EX_ILLEGAL_FUNCTION;
             for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ )
             {
@@ -379,15 +402,11 @@ eMBPoll( void )
                     eException = xFuncHandlers[i].pxHandler( ucRcvAddress, ucMBFrame, usLength );
                     break;
                 }
-                else
-                {
-                    eException = xFuncHandlers[MB_FUNC_HANDLERS_MAX - 1].pxHandler( ucRcvAddress, 
-                        ucMBFrame, usLength );
-                }
             }
             break;
 
         case EV_FRAME_SENT:
+        		DEBUG_LOG_LN("eMBPoll EV_FRAME_SENT");
             break;
         }
     }

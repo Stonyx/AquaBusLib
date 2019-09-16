@@ -9,9 +9,26 @@
 //
 // This software is provided "as is" without express or implied warranty.
 
+// Debug related definitions
+//#define DEBUG
+#ifdef DEBUG
+	#include <SoftwareSerial.h>
+	extern SoftwareSerial DebugSerial;
+  #define DEBUG_LOG(string) DebugSerial.print(string)
+  #define DEBUG_LOG_LN(string) DebugSerial.println(string)
+  #define DEBUG_LOG_HEX(string) DebugSerial.print(string,HEX)
+#else
+  #define DEBUG_LOG(string)
+  #define DEBUG_LOG_LN(string)
+#endif
+#define DEBUG_LOG_FREE_RAM() DEBUG_LOG(F("Free RAM: ")); DEBUG_LOG_LN(FreeRam())
+
+
 // Include header files
+#include <avr/eeprom.h>
 #include "modbus/include/mb.h"
 #include "modbus/include/mbframe.h"
+#include "modbus/rtu/mbrtu.h"
 #include "AquaBusDev.h"
 #include "AquaBusLib.h"
 
@@ -24,11 +41,14 @@ AquaBusDev::AquaBusDev(byte hwId, unsigned short hwSerial, byte hwRevision, byte
 {
   // Add outselves to the devices array
   AquaBusLib::addDevice(this);
+  probeStage = 0;
 }
 
 // Function called to send data
 // This function encapsulates the FreeModBus library function used to send the data
-void AquaBusDev::sendData(byte* data, unsigned short length)
+void AquaBusDev::sendData(byte destABAddr, byte* data, unsigned short length)
 {
-  peMBFrameSendCur(abAddress, data, length);
+	DEBUG_LOG_LN("sendData");
+  //peMBFrameSendCur(abAddress, data, length);
+  eMBRTUSend(destABAddr, data, length);
 }
