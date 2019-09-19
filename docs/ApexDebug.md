@@ -15,14 +15,22 @@ is on the UART side of the transciever, between arduino and the CAN. In the exam
 It is up to the reader to pick an appropriate logic analyzer for this. Since AquaBus operates at a relatively low speed, many basic analyzers will work. I prefer to use a Saleae Logic Analyzer for this due to its simplicity and robust, user friendly software.
 There are several inexpensive alternatives, compatible with Saleae software out there.
 
+
 ![Saleae Logic Analyzer Probes](adapter_arduino_saleae.png)
+
 
 You would want to connect "channel" probes to RTU RX and TX pins as described above. Also, make sure to connect the analyzer's common ground to the ground pin on the adapter.
 Once all probes are coonected and the traffic is captured, it needs be decoded so that it is presented in a readable form. Correct settings for each channel are as follows:
+
+
 ![Saleae AquaBus Protocol Settings](saleae_protocol_settings.png)
 
+
 Once everything is configured properly, a good capture would look like this (redacted):
+
+
 ![Saleae AquaBus Capture](saleae_capture.png)
+
 
 ### Arduino Debug Output
 
